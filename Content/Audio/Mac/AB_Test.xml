@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SoundBanksInfo Platform="Mac" BasePlatform="Mac" SchemaVersion="11" SoundbankVersion="134">
+	<RootPaths>
+		<ProjectRoot>C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\</ProjectRoot>
+		<SourceFilesRoot>C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Mac\</SourceFilesRoot>
+		<SoundBanksRoot>C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Content\Audio\Mac\</SoundBanksRoot>
+		<ExternalSourcesInputFile></ExternalSourcesInputFile>
+		<ExternalSourcesOutputRoot>C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\GeneratedSoundBanks\Mac</ExternalSourcesOutputRoot>
+	</RootPaths>
+	<SoundBanks>
+		<SoundBank Id="3737048823" GUID="{303B4E28-AA51-4696-BE33-501418725F80}" Language="SFX">
+			<ObjectPath>\SoundBanks\Default Work Unit\AB_Test</ObjectPath>
+			<ShortName>AB_Test</ShortName>
+			<Path>AB_Test.bnk</Path>
+			<IncludedEvents>
+				<Event Id="3187507146" Name="Play_Test" ObjectPath="\Events\Default Work Unit\Play_Test" GUID="{6675F220-D6F4-496F-86E9-FB46242AEC90}" DurationType="Infinite"/>
+				<Event Id="80081987" Name="Play_Test_Bip_2d" ObjectPath="\Events\Default Work Unit\Play_Test_Bip_2d" GUID="{9AF74C9F-6B65-488E-B9B3-E1B75E1BE776}" DurationType="OneShot" DurationMin="1.000000" DurationMax="1.000000"/>
+				<Event Id="237865631" Name="Play_Test_Bip_2d_Gp" ObjectPath="\Events\Default Work Unit\Play_Test_Bip_2d_Gp" GUID="{3740C9E5-9DAD-4297-A6F9-0B9B2E5277F0}" DurationType="Infinite"/>
+				<Event Id="63304432" Name="Play_Test_Bip_3d" ObjectPath="\Events\Default Work Unit\Play_Test_Bip_3d" GUID="{B18CF8D3-5D37-4A6F-9BCA-C5CA0913CE61}" DurationType="Infinite"/>
+				<Event Id="1664319863" Name="Play_Test_Sw" ObjectPath="\Events\Default Work Unit\Play_Test_Sw" GUID="{E43CE94D-720D-42FA-9744-811ABD4F1A65}" DurationType="OneShot" DurationMin="1.000000" DurationMax="1.000000"/>
+			</IncludedEvents>
+		</SoundBank>
+	</SoundBanks>
+</SoundBanksInfo>

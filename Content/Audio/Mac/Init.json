@@ -1,0 +1,25 @@
+{
+ "SoundBanksInfo": {
+  "Platform": "Mac",
+  "BasePlatform": "Mac",
+  "SchemaVersion": "11",
+  "SoundbankVersion": "134",
+  "RootPaths": {
+   "ProjectRoot": "C:\\Users\\ELE59cf469c9ad5e\\Desktop\\wq_wwise\\Wq_Wwise\\",
+   "SourceFilesRoot": "C:\\Users\\ELE59cf469c9ad5e\\Desktop\\wq_wwise\\Wq_Wwise\\.cache\\Mac\\",
+   "SoundBanksRoot": "C:\\Users\\ELE59cf469c9ad5e\\Desktop\\WQ\\Content\\Audio\\Mac\\",
+   "ExternalSourcesInputFile": "",
+   "ExternalSourcesOutputRoot": "C:\\Users\\ELE59cf469c9ad5e\\Desktop\\wq_wwise\\Wq_Wwise\\GeneratedSoundBanks\\Mac"
+  },
+  "SoundBanks": [
+   {
+    "Id": "1355168291",
+    "GUID": "{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}",
+    "Language": "SFX",
+    "ObjectPath": "Init",
+    "ShortName": "Init",
+    "Path": "Init.bnk"
+   }
+  ]
+ }
+}
