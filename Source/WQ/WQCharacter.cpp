@@ -10,6 +10,8 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Kismet/GameplayStatics.h"
 #include "MotionControllerComponent.h"
+#include "Managers/WQGameInstance.h"
+#include "Managers/AudioManager.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -171,7 +173,13 @@ void AWQCharacter::OnFire()
 	// try and play the sound if specified
 	if (FireSound != NULL)
 	{
-		UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+		//UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
+		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
+
+		if (IsValid(WQGI))
+		{
+			WQGI->AudioManager()->PlayTest();
+		}
 	}
 
 	// try and play a firing animation if specified
