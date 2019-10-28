@@ -29,6 +29,10 @@ class AWQCharacter : public ACharacter
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FirstPersonCameraComponent;
 
+	/** Weapon Pivot  */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
+	class USceneComponent* WeaponPivotComponent;
+
 public:
 	AWQCharacter();
 
@@ -61,9 +65,22 @@ public:
 	class UAnimMontage* FireAnimation;
 
 protected:
+	UPROPERTY(Replicated)
+	FRotator WeaponPitch;
+
+protected:
 	
-	/** Fires a projectile. */
-	void OnFire();
+	// Fires a projectile
+	UFUNCTION(BlueprintNativeEvent, Category="Fire")
+	void RPCFire();
+	virtual void RPCFire_Implementation();
+	// Server side function
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RPCFireNetwork();
+
+	// Projectile animation & sound
+	UFUNCTION(NetMulticast, Reliable)
+	void MulticastRPCFire();
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -83,16 +100,18 @@ protected:
 	 */
 	void LookUpAtRate(float Rate);
 	
-protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	//// Used to bind actions with parameters to the player inputs
+	//UFUNCTION()
+	//void BindActionWithParams(FInputActionHandlerSignature& Handler, FName ActionName);
 
 public:
 	/** Returns Mesh1P subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
-
 };
 
