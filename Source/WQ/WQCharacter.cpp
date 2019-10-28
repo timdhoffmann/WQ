@@ -86,11 +86,6 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	// Bind fire event
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::OnFire);
 
-	// Enable touchscreen input
-	EnableTouchscreenMovement(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AWQCharacter::OnResetVR);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AWQCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWQCharacter::MoveRight);
