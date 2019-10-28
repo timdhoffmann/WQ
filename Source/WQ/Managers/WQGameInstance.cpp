@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-#include "AudioManager.h"
 #include "WQGameInstance.h"
+#include "AudioManager.h"
 
  // Singleton-like accessor. I only use this as a workaround for PIE
  // The GameInstance lifecycle is different in PIE
