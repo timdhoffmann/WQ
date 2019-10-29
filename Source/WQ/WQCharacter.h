@@ -21,10 +21,6 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
-	// Shake caller function, editable in blueprints
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Headbob")
-	void HeadBob(float Value);
-
 protected:
 	virtual void BeginPlay();
 
@@ -93,5 +89,9 @@ protected:
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
+
+	/** HeadBob shake blueprint */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
+	TSubclassOf<class UCameraShake> HeadbobShake;
 };
 

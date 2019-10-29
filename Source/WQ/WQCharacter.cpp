@@ -12,6 +12,7 @@
 #include "MotionControllerComponent.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
+#include "Math/UnrealMathUtility.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
@@ -120,7 +121,12 @@ void AWQCharacter::MoveForward(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorForwardVector(), Value);
-		HeadBob(Value);
+
+		// Try and play the headbob if specified
+		if (HeadbobShake != nullptr)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
+		}
 	}
 }
 
@@ -130,7 +136,12 @@ void AWQCharacter::MoveRight(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
-		HeadBob(Value);
+
+		// Try and play the headbob if specified
+		if (HeadbobShake != nullptr)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
+		}
 	}
 }
 
