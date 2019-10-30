@@ -54,9 +54,6 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	// Bind fire event
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::OnFire);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AWQCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWQCharacter::MoveRight);
@@ -68,6 +65,22 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("TurnRate", this, &AWQCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AWQCharacter::LookUpAtRate);
+
+	// Bind power event
+	PlayerInputComponent->BindAction("Power", IE_Pressed, this, &AWQCharacter::PowerPressed);
+	PlayerInputComponent->BindAction("Power", IE_Released, this, &AWQCharacter::PowerReleased);
+}
+
+/** Power pressed, called by the input */
+void AWQCharacter::PowerPressed()
+{
+	PowerPressedEvent.Broadcast();
+}
+
+/** Power released, called by the input */
+void AWQCharacter::PowerReleased()
+{
+	PowerReleasedEvent.Broadcast();
 }
 
 void AWQCharacter::OnFire()

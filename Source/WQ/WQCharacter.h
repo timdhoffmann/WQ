@@ -8,6 +8,9 @@
 
 class UInputComponent;
 
+DECLARE_EVENT(AWQCharacter, FPowerPressed)
+DECLARE_EVENT(AWQCharacter, FPowerReleased)
+
 UCLASS(config=Game)
 class AWQCharacter : public ACharacter
 {
@@ -18,8 +21,13 @@ public:
 
 	/** Returns Mesh1P subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	// Accessor to the power events
+	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
+	FPowerReleased& OnPowerReleased() { return PowerReleasedEvent; }
 
 protected:
 	virtual void BeginPlay();
@@ -48,6 +56,12 @@ protected:
 	// APawn interface
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
+
+	/** Power binding methods, called by the input */
+	UFUNCTION()
+	void PowerPressed();
+	UFUNCTION()
+	void PowerReleased();
 
 protected:
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
@@ -93,5 +107,11 @@ protected:
 	/** HeadBob shake blueprint */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
 	TSubclassOf<class UCameraShake> HeadbobShake;
+
+	// Called when the player presses the power input
+	FPowerPressed PowerPressedEvent;
+
+	// Called when the player releases the power input
+	FPowerReleased PowerReleasedEvent;
 };
 
