@@ -1,0 +1,3 @@
+[submodule "Plugins/DonAINavigation"]
+	path = Plugins/DonAINavigation
+	url = https://github.com/VSZue/DonAINavigation.git

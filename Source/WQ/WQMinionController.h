@@ -6,6 +6,9 @@
 #include "AIController.h"
 #include "WQMinionController.generated.h"
 
+class UBehaviorTree;
+class UBlackboardComponent;
+
 /**
  * 
  */
@@ -15,15 +18,28 @@ class WQ_API AWQMinionController : public AAIController
 	GENERATED_BODY()
 
 public:
-    void BeginPlay() override;
+    UPROPERTY( EditAnywhere, BlueprintReadWrite )
+    TArray<AActor*>         Waypoints;
+
+    UPROPERTY( EditAnywhere, BlueprintReadWrite )
+    UBehaviorTree*          BehaviorTree;
+
+    UPROPERTY( EditAnywhere, BlueprintReadWrite )
+    UBlackboardComponent*   BlackboardComponent;
+
+public:
+                            AWQMinionController();
+
+    void                    BeginPlay() override;
+    void                    OnMoveCompleted( FAIRequestID RequestID, const FPathFollowingResult& Result ) override;
 
 private:
-    UPROPERTY()
-    TArray<AActor*> Waypoints;
+    FTimerHandle            TimerHandle;
+
+private:
+    UFUNCTION()
+    ATargetPoint*           GetRandomWaypoint();
 
     UFUNCTION()
-    ATargetPoint* GetRandomWaypoint();
-
-    UFUNCTION()
-    void GoToRandomWaypoint();
+    void                    GoToRandomWaypoint();
 };
