@@ -47,6 +47,7 @@ protected:
 
 	// Sweep parameters
 	FCollisionShape Sphere;
+	FCollisionShape BiggerSphere;
 	FCollisionQueryParams SweepParams;
 
 	// Is the magnet targetting activated

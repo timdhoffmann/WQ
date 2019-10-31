@@ -78,12 +78,12 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 			}
 		}
 
-		// Add gravity
-		if (bIsGravityEnabled)
-		{
-			Velocity = ComputeFallVelocity(Velocity, DeltaTime);
-			UE_LOG(LogTemp, Warning, TEXT("Velocity is %f"), Velocity.Z);
-		}
+		//// Add gravity
+		//if (bIsGravityEnabled)
+		//{
+		//	Velocity = ComputeFallVelocity(Velocity, DeltaTime);
+		//	UE_LOG(LogTemp, Warning, TEXT("Velocity is %f"), Velocity.Z);
+		//}
 
 		// Finalize
 		UpdateComponentVelocity();

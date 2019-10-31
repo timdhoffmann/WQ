@@ -30,6 +30,7 @@ void UMagnetPower::BeginPlay()
 
 	// Create the sweep parameters
 	Sphere = FCollisionShape::MakeSphere(MagnetRadius);
+	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius * 1.25f);
 	SweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 
@@ -69,6 +70,8 @@ void UMagnetPower::PowerReleased()
 		for (AProps* Prop : MagnetizedProps)
 		{
 			Prop->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+			Prop->SetPhysicSimulation(true);
+			Prop->SetGravitySimulation(true);
 		}
 		MagnetizedProps.Empty();
 	}
@@ -93,7 +96,7 @@ void UMagnetPower::UpdateMagnet()
 
 	// Find all props in a new sweep based on the hit of the previous one
 	TArray<FOverlapResult> OutProps;
-	if (World->OverlapMultiByChannel(OutProps, FinalLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3, Sphere, SweepParams))
+	if (World->OverlapMultiByChannel(OutProps, FinalLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3, BiggerSphere, SweepParams))
 	{
 		for (FOverlapResult Res : OutProps)
 		{
@@ -101,15 +104,13 @@ void UMagnetPower::UpdateMagnet()
 			if (Prop != nullptr && !MagnetizedProps.Contains(Prop))
 			{
 				Prop->GetRootComponent()->AttachToComponent(PowerLocation, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
-				//UE_LOG(LogTemp, Error, TEXT("1"));
-				//FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
-				//Props->AttachToActor(Character, AttachmentRules);
-				FLatentActionInfo LatentInfo;
-				LatentInfo.CallbackTarget = this;
-				LatentInfo.UUID = MagnetizedProps.Num();
-				//LatentInfo.ExecutionFunction = TEXT("AttachProps");
-				//LatentInfo.Linkage = 1;
-				UKismetSystemLibrary::MoveComponentTo(Prop->GetRootComponent(), FVector::ZeroVector, Prop->GetRootComponent()->RelativeRotation, false, false, MagnetDuration, false, EMoveComponentAction::Type::Move, LatentInfo);
+				Prop->FlyTowards(1000.0f, FVector::ZeroVector);
+				//FLatentActionInfo LatentInfo;
+				//LatentInfo.CallbackTarget = this;
+				//LatentInfo.UUID = MagnetizedProps.Num();
+				////LatentInfo.ExecutionFunction = TEXT("AttachProps");
+				////LatentInfo.Linkage = 1;
+				//UKismetSystemLibrary::MoveComponentTo(Prop->GetRootComponent(), FVector::ZeroVector, Prop->GetRootComponent()->RelativeRotation, false, false, MagnetDuration, false, EMoveComponentAction::Type::Move, LatentInfo);
 				MagnetizedProps.Add(Prop);
 			}
 		}
