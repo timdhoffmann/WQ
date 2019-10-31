@@ -23,6 +23,8 @@ void UPower::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("POWER: Character not found!"));
 	}
+
+	PowerLocation = Character->GetPowerLocation();
 }
 
 
@@ -33,9 +35,9 @@ void UPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponent
 }
 
 // Behaviour when the power is activated
-void UPower::SetPowerActive(bool State)
+void UPower::SetPowerActive(bool bState)
 {
-	if (State)
+	if (bState)
 	{
 		// Subscribe to the correct events
 		Character->OnPowerPressed().AddUFunction(this, TEXT("PowerPressed"));

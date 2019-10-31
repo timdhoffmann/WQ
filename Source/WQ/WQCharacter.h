@@ -25,6 +25,9 @@ public:
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
+	/** Returns the Power Location scene component **/
+	class USceneComponent* GetPowerLocation() const { return FP_PowerLocation; }
+
 	// Accessor to the power events
 	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
 	FPowerReleased& OnPowerReleased() { return PowerReleasedEvent; }
@@ -66,19 +69,19 @@ protected:
 protected:
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-		class USkeletalMeshComponent* Mesh1P;
+	class USkeletalMeshComponent* Mesh1P;
 
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-		class USkeletalMeshComponent* FP_Gun;
+	class USkeletalMeshComponent* FP_Gun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-		class USceneComponent* FP_MuzzleLocation;
+	USceneComponent* FP_MuzzleLocation;
 
 	/** First person camera */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FirstPersonCameraComponent;
+	class UCameraComponent* FirstPersonCameraComponent;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera)
@@ -113,5 +116,9 @@ protected:
 
 	// Called when the player releases the power input
 	FPowerReleased PowerReleasedEvent;
+
+	/** Location on gun mesh where projectiles should spawn. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
+	USceneComponent* FP_PowerLocation;
 };
 

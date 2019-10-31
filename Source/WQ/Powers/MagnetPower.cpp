@@ -16,8 +16,9 @@ UMagnetPower::UMagnetPower()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	// Default values
-	MagnetRange = 1000.0f;
+	MagnetRange = 500.0f;
 	MagnetRadius = 50.0f;
+	MagnetDuration = 0.1f;
 	bIsTargettingActivated = false;
 }
 
@@ -64,6 +65,12 @@ void UMagnetPower::PowerReleased()
 	if (bIsTargettingActivated)
 	{
 		bIsTargettingActivated = false;
+
+		for (AProps* Prop : MagnetizedProps)
+		{
+			Prop->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+		}
+		MagnetizedProps.Empty();
 	}
 }
 
@@ -77,10 +84,11 @@ void UMagnetPower::UpdateMagnet()
 		UE_LOG(LogTemp, Error, TEXT("MagnetPower: World not found!"));
 	}
 	FHitResult Hit(1.0f);
-	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation();
-	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();			
+	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
+	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();	
 	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, Sphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
+	PowerLocation->SetWorldLocation(FinalLocation);
 	DrawDebugSphere(World, FinalLocation, MagnetRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
@@ -89,14 +97,20 @@ void UMagnetPower::UpdateMagnet()
 	{
 		for (FOverlapResult Res : OutProps)
 		{
-			AProps* Props = Cast<AProps>(Res.Actor);
-			if (Props != nullptr)
+			AProps* Prop = Cast<AProps>(Res.Actor);
+			if (Prop != nullptr && !MagnetizedProps.Contains(Prop))
 			{
-				UE_LOG(LogTemp, Error, TEXT("1"));
-				FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
-				Props->AttachToActor(Character, AttachmentRules);
-				//FLatentActionInfo LatentInfo;
-				//UKismetSystemLibrary::MoveComponentTo(Props->GetRootComponent(), FinalLocation + FVector::UpVector * 100.0f, Props->GetRootComponent()->RelativeRotation, true, true, 0.1f, true, EMoveComponentAction::Type::Move, LatentInfo);
+				Prop->GetRootComponent()->AttachToComponent(PowerLocation, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
+				//UE_LOG(LogTemp, Error, TEXT("1"));
+				//FAttachmentTransformRules AttachmentRules(EAttachmentRule::KeepRelative, true);
+				//Props->AttachToActor(Character, AttachmentRules);
+				FLatentActionInfo LatentInfo;
+				LatentInfo.CallbackTarget = this;
+				LatentInfo.UUID = MagnetizedProps.Num();
+				//LatentInfo.ExecutionFunction = TEXT("AttachProps");
+				//LatentInfo.Linkage = 1;
+				UKismetSystemLibrary::MoveComponentTo(Prop->GetRootComponent(), FVector::ZeroVector, Prop->GetRootComponent()->RelativeRotation, false, false, MagnetDuration, false, EMoveComponentAction::Type::Move, LatentInfo);
+				MagnetizedProps.Add(Prop);
 			}
 		}
 	}

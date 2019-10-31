@@ -23,7 +23,7 @@ public:
 
 	// Behaviour when the power is activated
 	UFUNCTION(BlueprintCallable, Category = "Power")
-	virtual void SetPowerActive(bool State);
+	virtual void SetPowerActive(bool bState);
 
 protected:
 	// Called when the game starts
@@ -41,4 +41,8 @@ protected:
 	// Reference to the character the power is linked to
 	UPROPERTY()
 	class AWQCharacter* Character;
+
+	// Where the power effects will be positioned
+	UPROPERTY()
+	class USceneComponent* PowerLocation;
 };

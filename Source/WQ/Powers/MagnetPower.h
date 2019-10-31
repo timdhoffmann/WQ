@@ -41,10 +41,18 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetRadius;
 
+	// Duration of the snapping
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float MagnetDuration;
+
 	// Sweep parameters
 	FCollisionShape Sphere;
 	FCollisionQueryParams SweepParams;
 
 	// Is the magnet targetting activated
 	bool bIsTargettingActivated;
+
+	/** Props list */
+	UPROPERTY()
+	TArray<class AProps*> MagnetizedProps;
 };
