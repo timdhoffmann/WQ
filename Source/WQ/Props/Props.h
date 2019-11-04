@@ -36,16 +36,12 @@ public:
 	/** Stop the flying */
 	void FlyStop();
 
+	/** Propulse physically */
+	void Propulse(FVector Direction, float Strength);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
-
-	///** Make the fly stop when there is a collision */
-	//void StopFly();
-
-	///** Same function, used for the on hit event */
-	//UFUNCTION()
-	//void StopFly(class UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit);
 
 protected:
 	/** Root mesh component of the props */

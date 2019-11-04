@@ -8,6 +8,7 @@
 #include "Engine/EngineTypes.h"
 #include "DrawDebugHelpers.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Camera/CameraComponent.h"
 
 // Sets default values for this component's properties
 UMagnetPower::UMagnetPower()
@@ -18,10 +19,13 @@ UMagnetPower::UMagnetPower()
 
 	// Default values
 	MagnetRange = 500.0f;
+	SphereRadius = 40.0f;
 	MagnetRadius = 50.0f;
 	MagnetDuration = 0.1f;
 	MagnetForce = 10.0f;
 	bIsTargettingActivated = false;
+	SpinningSpeed = FVector(0.0f, 0.0f, 1.0f);
+	PropulsionForce = 50000.0f;
 }
 
 
@@ -31,8 +35,8 @@ void UMagnetPower::BeginPlay()
 	Super::BeginPlay();
 
 	// Create the sweep parameters
-	Sphere = FCollisionShape::MakeSphere(MagnetRadius);
-	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius * 1.25f);
+	Sphere = FCollisionShape::MakeSphere(SphereRadius);
+	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius);
 	SweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 
@@ -72,6 +76,7 @@ void UMagnetPower::PowerReleased()
 		for (AProps* Prop : MagnetizedProps)
 		{
 			Prop->FlyStop();
+			Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
 		}
 		MagnetizedProps.Empty();
 	}
@@ -89,11 +94,12 @@ void UMagnetPower::UpdateMagnet()
 	FHitResult Hit(1.0f);
 	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
 	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();	
-	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, Sphere, SweepParams);
+	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, BiggerSphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
 	PowerLocation->SetWorldLocation(FinalLocation);
+	PowerLocation->AddLocalRotation(FRotator(SpinningSpeed.X, SpinningSpeed.Y, SpinningSpeed.Z));
 	//Character->GetPhysicsPowerLocation()->SetTargetLocation(FinalLocation);
-	DrawDebugSphere(World, FinalLocation, MagnetRadius, 32, FColor::White);
+	DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
 	TArray<FOverlapResult> OutProps;
@@ -104,21 +110,8 @@ void UMagnetPower::UpdateMagnet()
 			AProps* Prop = Cast<AProps>(Res.Actor);
 			if (Prop != nullptr && !MagnetizedProps.Contains(Prop))
 			{
-				//Prop->PrepareFly();
-				//UPhysicsHandleComponent* PhysicsHandle = Character->GetPhysicsPowerLocation();
-				//if (PhysicsHandle != nullptr)
-				//{
-				//	PhysicsHandle->GrabComponentAtLocation(Prop->FindComponentByClass<UPrimitiveComponent>(), TEXT("Magnet"), FinalLocation);
-				//}
 				Prop->FlyTowards(PowerLocation, MagnetForce);
-				/*Prop->GetRootComponent()->AttachToComponent(PowerLocation, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));*/
 				MagnetizedProps.Add(Prop);
-				//FLatentActionInfo LatentInfo;
-				//LatentInfo.CallbackTarget = this;
-				//LatentInfo.UUID = MagnetizedProps.Num();
-				////LatentInfo.ExecutionFunction = TEXT("AttachProps");
-				////LatentInfo.Linkage = 1;
-				//UKismetSystemLibrary::MoveComponentTo(Prop->GetRootComponent(), FVector::ZeroVector, Prop->GetRootComponent()->RelativeRotation, false, false, MagnetDuration, false, EMoveComponentAction::Type::Move, LatentInfo);
 			}
 		}
 	}

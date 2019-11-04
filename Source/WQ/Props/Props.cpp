@@ -31,15 +31,6 @@ void AProps::BeginPlay()
 void AProps::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	//if (bIsFlying)
-	//{
-	//	if (FVector::DistSquared(FlyingTarget, GetRootComponent()->GetComponentLocation()) <= 1000.0f)
-	//	{
-	//		StopFly();
-	//		bIsFlying = false;
-	//	}
-	//}
 }
 
 // Called to bind functionality to input
@@ -78,16 +69,6 @@ void AProps::SetGravitySimulation(bool bState)
 	}
 }
 
-///** Remove gravity and make the fly stop when there is a collision */
-//void AProps::PrepareFly()
-//{
-//	SetGravitySimulation(false);
-//
-//	Mesh->OnComponentHit.AddDynamic(this, &AProps::StopFly);
-//
-//	//bIsFlying = true;
-//}
-
 /** Remove physical sims, move the prop towards a target */
 void AProps::FlyTowards(USceneComponent* NewParent, float Speed)
 {
@@ -95,12 +76,9 @@ void AProps::FlyTowards(USceneComponent* NewParent, float Speed)
 
 	GetRootComponent()->AttachToComponent(NewParent, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
 
-	PropsMovementComponent->MoveAutomaticallyTo(NewParent, Speed);
+	//PropsMovementComponent->MoveAutomaticallyTo(NewParent, Speed);
 
-	//Mesh->OnComponentHit.AddDynamic(this, &AProps::StopFly);
-
-	//FlyingTarget = Target;
-	//Mesh->AddForce(ForceAmplitude * (Target - GetRootComponent()->GetComponentLocation()));
+	Mesh->SetCollisionProfileName(TEXT("PropsHeld"));
 }
 
 /** Stop the flying */
@@ -108,21 +86,13 @@ void AProps::FlyStop()
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	SetPhysicSimulation(true);
-	PropsMovementComponent->StopAutomaticMovement();
+	//PropsMovementComponent->StopAutomaticMovement();
+	Mesh->SetCollisionProfileName(TEXT("Props"));
 }
 
-///** Make the fly stop when there is a collision */
-//void AProps::StopFly()
-//{
-//	Mesh->OnComponentHit.RemoveDynamic(this, &AProps::StopFly);
-//}
-//
-///** Make the fly stop when there is a collision */
-//void AProps::StopFly(class UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
-//{
-//	if (Cast<class AWQCharacter>(OtherActor) == nullptr)
-//	{
-//		StopFly();
-//	}
-//}
+/** Propulse physically */
+void AProps::Propulse(FVector Direction, float Strength)
+{
+	Mesh->AddForce(Direction * Strength * Mesh->GetMassScale(), NAME_None, true);
+}
 

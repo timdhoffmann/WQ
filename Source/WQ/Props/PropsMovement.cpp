@@ -19,6 +19,9 @@ UPropsMovement::UPropsMovement(const FObjectInitializer& ObjectInitializer) : Su
 
 	bShouldMoveAutomatically = false;
 
+	SweepParams = FCollisionQueryParams();
+	SweepParams.AddIgnoredActor(this->GetOwner()); // Ignore the character in the sweep
+
 	ResetMoveState();
 }
 
@@ -32,7 +35,7 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 		// Stop the movement if we are close enough
 		if (FVector::DistSquared(UpdatedComponent->GetComponentLocation(), MoveTarget->GetComponentLocation()) <= 1.0f)
 		{
-			UpdatedComponent->SetWorldLocation(MoveTarget->GetComponentLocation());
+			//UpdatedComponent->SetWorldLocation(MoveTarget->GetComponentLocation());
 			bShouldMoveAutomatically = false;
 			return;
 		}
@@ -57,23 +60,35 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 			const FQuat Rotation = UpdatedComponent->GetComponentQuat();
 
 			FHitResult Hit(1.f);
-			SafeMoveUpdatedComponent(Delta, Rotation, true, Hit);
+			// Update the raycast
+			UWorld* const World = GetWorld();
+			if (!World)
+			{
+				UE_LOG(LogTemp, Error, TEXT("PropsMovement: World not found!"));
+			}
+			World->LineTraceSingleByChannel(Hit, OldLocation, OldLocation + Delta, ECollisionChannel::ECC_GameTraceChannel3, SweepParams);
 
 			if (Hit.IsValidBlockingHit())
 			{
 				bShouldMoveAutomatically = false;
 				return;
-				//// Stop the movement if we hit another prop
-				//if (Cast<AProps>(Hit.GetActor()) != nullptr)
-				//{
-				//	bShouldMoveAutomatically = false;
-				//	return;
-				//}
-
-				HandleImpact(Hit, DeltaTime, Delta);
-				// Try to slide the remaining distance along the surface.
-				SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
 			}
+
+			//SafeMoveUpdatedComponent(Delta / 2.0f, Rotation, true, Hit);
+
+			//if (Hit.IsValidBlockingHit())
+			//{
+			//	//// Stop the movement if we hit another prop
+			//	//if (Cast<AProps>(Hit.GetActor()) != nullptr)
+			//	//{
+			//	//	bShouldMoveAutomatically = false;
+			//	//	return;
+			//	//}
+
+			//	//HandleImpact(Hit, DeltaTime, Delta);
+			//	//// Try to slide the remaining distance along the surface.
+			//	//SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
+			//}
 
 			// Update velocity
 			// We don't want position changes to vastly reverse our direction (which can happen due to penetration fixups etc)
@@ -151,6 +166,7 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 		}
 	}
 };
+
 
 bool UPropsMovement::LimitWorldBounds()
 {

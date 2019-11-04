@@ -37,6 +37,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetRange;
 
+	// Radius of the sphere
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float SphereRadius;
+
 	// Radius of the power
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetRadius;
@@ -48,6 +52,14 @@ protected:
 	// Force of the magnetization
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetForce;
+
+	// Speed of the spinning
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	FVector SpinningSpeed;
+
+	// Propulsion force
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float PropulsionForce;
 
 	// Sweep parameters
 	FCollisionShape Sphere;

@@ -92,4 +92,7 @@ protected:
 
 	/** Automatic movement speed */
 	float AutomaticMovementSpeed;
+
+	/** Sweep parameters for the collision check when moving automatically */
+	FCollisionQueryParams SweepParams;
 };
