@@ -2,6 +2,7 @@
 
 
 #include "PropsMovement.h"
+#include "Props.h"
 
 // Sets default values
 UPropsMovement::UPropsMovement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -16,36 +17,32 @@ UPropsMovement::UPropsMovement(const FObjectInitializer& ObjectInitializer) : Su
 	TerminalVelocity = 500.0f;
 	Gravity = FVector(0, 0, -1);
 
+	bShouldMoveAutomatically = false;
+
 	ResetMoveState();
 }
 
 void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
-	if (ShouldSkipUpdate(DeltaTime))
-	{
-		return;
-	}
-
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (!PawnOwner || !UpdatedComponent)
+	// Logic for moving automatically without a controller
+	if (bShouldMoveAutomatically)
 	{
-		return;
-	}
-
-	const AController* Controller = PawnOwner->GetController();
-	if (Controller && Controller->IsLocalController())
-	{
-		// apply input for local players but also for AI that's not following a navigation path at the moment
-		if (Controller->IsLocalPlayerController() == true || Controller->IsFollowingAPath() == false || bUseAccelerationForPaths)
+		// Stop the movement if we are close enough
+		if (FVector::DistSquared(UpdatedComponent->GetComponentLocation(), MoveTarget->GetComponentLocation()) <= 1.0f)
 		{
-			ApplyControlInputToVelocity(DeltaTime);
+			UpdatedComponent->SetWorldLocation(MoveTarget->GetComponentLocation());
+			bShouldMoveAutomatically = false;
+			return;
 		}
-		// if it's not player controller, but we do have a controller, then it's AI
-		// (that's not following a path) and we need to limit the speed
-		else if (IsExceedingMaxSpeed(MaxSpeed) == true)
+
+		Velocity = (MoveTarget->GetComponentLocation() - UpdatedComponent->GetComponentLocation()) * AutomaticMovementSpeed;
+
+		// Add gravity
+		if (bIsGravityEnabled)
 		{
-			Velocity = Velocity.GetUnsafeNormal() * MaxSpeed;
+			Velocity = ComputeFallVelocity(Velocity, DeltaTime);
 		}
 
 		LimitWorldBounds();
@@ -64,6 +61,15 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 
 			if (Hit.IsValidBlockingHit())
 			{
+				bShouldMoveAutomatically = false;
+				return;
+				//// Stop the movement if we hit another prop
+				//if (Cast<AProps>(Hit.GetActor()) != nullptr)
+				//{
+				//	bShouldMoveAutomatically = false;
+				//	return;
+				//}
+
 				HandleImpact(Hit, DeltaTime, Delta);
 				// Try to slide the remaining distance along the surface.
 				SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
@@ -78,15 +84,71 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 			}
 		}
 
-		//// Add gravity
-		//if (bIsGravityEnabled)
-		//{
-		//	Velocity = ComputeFallVelocity(Velocity, DeltaTime);
-		//	UE_LOG(LogTemp, Warning, TEXT("Velocity is %f"), Velocity.Z);
-		//}
-
 		// Finalize
 		UpdateComponentVelocity();
+	}
+	else
+	{
+		// Logic for controlled pawn
+		if (!PawnOwner || !UpdatedComponent)
+		{
+			return;
+		}
+
+		const AController* Controller = PawnOwner->GetController();
+		if (Controller && Controller->IsLocalController())
+		{
+			// apply input for local players but also for AI that's not following a navigation path at the moment
+			if (Controller->IsLocalPlayerController() == true || Controller->IsFollowingAPath() == false || bUseAccelerationForPaths)
+			{
+				ApplyControlInputToVelocity(DeltaTime);
+			}
+			// if it's not player controller, but we do have a controller, then it's AI
+			// (that's not following a path) and we need to limit the speed
+			else if (IsExceedingMaxSpeed(MaxSpeed) == true)
+			{
+				Velocity = Velocity.GetUnsafeNormal() * MaxSpeed;
+			}
+
+			// Add gravity
+			if (bIsGravityEnabled)
+			{
+				Velocity = ComputeFallVelocity(Velocity, DeltaTime);
+			}
+
+			LimitWorldBounds();
+			bPositionCorrected = false;
+
+			// Move actor
+			FVector Delta = Velocity * DeltaTime;
+
+			if (!Delta.IsNearlyZero(1e-6f))
+			{
+				const FVector OldLocation = UpdatedComponent->GetComponentLocation();
+				const FQuat Rotation = UpdatedComponent->GetComponentQuat();
+
+				FHitResult Hit(1.f);
+				SafeMoveUpdatedComponent(Delta, Rotation, true, Hit);
+
+				if (Hit.IsValidBlockingHit())
+				{
+					HandleImpact(Hit, DeltaTime, Delta);
+					// Try to slide the remaining distance along the surface.
+					SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
+				}
+
+				// Update velocity
+				// We don't want position changes to vastly reverse our direction (which can happen due to penetration fixups etc)
+				if (!bPositionCorrected)
+				{
+					const FVector NewLocation = UpdatedComponent->GetComponentLocation();
+					Velocity = ((NewLocation - OldLocation) / DeltaTime);
+				}
+			}
+
+			// Finalize
+			UpdateComponentVelocity();
+		}
 	}
 };
 
@@ -184,5 +246,17 @@ FVector UPropsMovement::ComputeFallVelocity(const FVector& InitialVelocity, floa
 	}
 
 	return FallVelocity;
+}
+
+void UPropsMovement::MoveAutomaticallyTo(USceneComponent* Target, float Speed)
+{
+	bShouldMoveAutomatically = true;
+	MoveTarget = Target;
+	AutomaticMovementSpeed = Speed;
+}
+
+void UPropsMovement::StopAutomaticMovement()
+{
+	bShouldMoveAutomatically = false;
 }
 

@@ -27,6 +27,7 @@ public:
 
 	/** Returns the Power Location scene component **/
 	class USceneComponent* GetPowerLocation() const { return FP_PowerLocation; }
+	//class UPhysicsHandleComponent* GetPhysicsPowerLocation() const { return FP_PhysicsPowerLocation; }
 
 	// Accessor to the power events
 	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
@@ -117,8 +118,12 @@ protected:
 	// Called when the player releases the power input
 	FPowerReleased PowerReleasedEvent;
 
-	/** Location on gun mesh where projectiles should spawn. */
+	/** Location of the effects of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
 	USceneComponent* FP_PowerLocation;
+
+	///** Location of the effects of the power, for physical simulations */
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
+	//UPhysicsHandleComponent* FP_PhysicsPowerLocation;
 };
 

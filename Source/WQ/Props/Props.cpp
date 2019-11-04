@@ -13,7 +13,10 @@ AProps::AProps()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Create the movement component
-	UPropsMovement* MovementComponent = CreateDefaultSubobject<UPropsMovement>(TEXT("PropsMovementComponent"));
+	PropsMovementComponent = CreateDefaultSubobject<UPropsMovement>(TEXT("PropsMovementComponent"));
+
+	// Default values
+	bIsFlying = false;
 }
 
 // Called when the game starts or when spawned
@@ -28,6 +31,15 @@ void AProps::BeginPlay()
 void AProps::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+
+	//if (bIsFlying)
+	//{
+	//	if (FVector::DistSquared(FlyingTarget, GetRootComponent()->GetComponentLocation()) <= 1000.0f)
+	//	{
+	//		StopFly();
+	//		bIsFlying = false;
+	//	}
+	//}
 }
 
 // Called to bind functionality to input
@@ -66,24 +78,51 @@ void AProps::SetGravitySimulation(bool bState)
 	}
 }
 
-/** Move the prop towards a target, make it stop when there is a collision */
-void AProps::FlyTowards(float ForceAmplitude, FVector Target)
+///** Remove gravity and make the fly stop when there is a collision */
+//void AProps::PrepareFly()
+//{
+//	SetGravitySimulation(false);
+//
+//	Mesh->OnComponentHit.AddDynamic(this, &AProps::StopFly);
+//
+//	//bIsFlying = true;
+//}
+
+/** Remove physical sims, move the prop towards a target */
+void AProps::FlyTowards(USceneComponent* NewParent, float Speed)
 {
-	SetGravitySimulation(false);
+	SetPhysicSimulation(false);
 
-	Mesh->AddForce(ForceAmplitude * (Target - GetRootComponent()->GetComponentLocation()));
+	GetRootComponent()->AttachToComponent(NewParent, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
 
-	Mesh->OnComponentHit.AddDynamic(this, &AProps::StopFly);
+	PropsMovementComponent->MoveAutomaticallyTo(NewParent, Speed);
+
+	//Mesh->OnComponentHit.AddDynamic(this, &AProps::StopFly);
+
+	//FlyingTarget = Target;
+	//Mesh->AddForce(ForceAmplitude * (Target - GetRootComponent()->GetComponentLocation()));
 }
 
-/** Make the fly stop when there is a collision */
-void AProps::StopFly(class UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+/** Stop the flying */
+void AProps::FlyStop()
 {
-	if (Cast<class AWQCharacter>(OtherActor) == nullptr)
-	{
-		//Mesh->OnComponentHit.RemoveAll();
-
-		SetPhysicSimulation(false);
-	}
+	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	SetPhysicSimulation(true);
+	PropsMovementComponent->StopAutomaticMovement();
 }
+
+///** Make the fly stop when there is a collision */
+//void AProps::StopFly()
+//{
+//	Mesh->OnComponentHit.RemoveDynamic(this, &AProps::StopFly);
+//}
+//
+///** Make the fly stop when there is a collision */
+//void AProps::StopFly(class UPrimitiveComponent* HitComponent, AActor* OtherActor, UPrimitiveComponent* OtherComponent, FVector NormalImpulse, const FHitResult& Hit)
+//{
+//	if (Cast<class AWQCharacter>(OtherActor) == nullptr)
+//	{
+//		StopFly();
+//	}
+//}
 

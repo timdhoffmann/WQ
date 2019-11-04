@@ -45,6 +45,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetDuration;
 
+	// Force of the magnetization
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float MagnetForce;
+
 	// Sweep parameters
 	FCollisionShape Sphere;
 	FCollisionShape BiggerSphere;

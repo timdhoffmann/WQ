@@ -28,6 +28,10 @@ public:
 
 	virtual float GetMaxSpeed() const override { return MaxSpeed; }
 
+	virtual void MoveAutomaticallyTo(class USceneComponent* Target, float Speed);
+
+	virtual void StopAutomaticMovement();
+
 protected:
 	virtual void TickComponent(float DeltaTime, enum ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
@@ -79,4 +83,13 @@ protected:
 	/** Set to true when a position correction is applied. Used to avoid recalculating velocity when this occurs. */
 	UPROPERTY(Transient)
 	uint32 bPositionCorrected : 1;
+
+	/** Should the prop move automatically towards a target ? */
+	bool bShouldMoveAutomatically;
+
+	/** Automatic movement target */
+	USceneComponent* MoveTarget;
+
+	/** Automatic movement speed */
+	float AutomaticMovementSpeed;
 };

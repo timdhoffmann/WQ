@@ -7,6 +7,7 @@
 #include "Props/Props.h"
 #include "Engine/EngineTypes.h"
 #include "DrawDebugHelpers.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 
 // Sets default values for this component's properties
 UMagnetPower::UMagnetPower()
@@ -19,6 +20,7 @@ UMagnetPower::UMagnetPower()
 	MagnetRange = 500.0f;
 	MagnetRadius = 50.0f;
 	MagnetDuration = 0.1f;
+	MagnetForce = 10.0f;
 	bIsTargettingActivated = false;
 }
 
@@ -69,9 +71,7 @@ void UMagnetPower::PowerReleased()
 
 		for (AProps* Prop : MagnetizedProps)
 		{
-			Prop->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-			Prop->SetPhysicSimulation(true);
-			Prop->SetGravitySimulation(true);
+			Prop->FlyStop();
 		}
 		MagnetizedProps.Empty();
 	}
@@ -92,6 +92,7 @@ void UMagnetPower::UpdateMagnet()
 	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, Sphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
 	PowerLocation->SetWorldLocation(FinalLocation);
+	//Character->GetPhysicsPowerLocation()->SetTargetLocation(FinalLocation);
 	DrawDebugSphere(World, FinalLocation, MagnetRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
@@ -103,15 +104,21 @@ void UMagnetPower::UpdateMagnet()
 			AProps* Prop = Cast<AProps>(Res.Actor);
 			if (Prop != nullptr && !MagnetizedProps.Contains(Prop))
 			{
-				Prop->GetRootComponent()->AttachToComponent(PowerLocation, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
-				Prop->FlyTowards(1000.0f, FVector::ZeroVector);
+				//Prop->PrepareFly();
+				//UPhysicsHandleComponent* PhysicsHandle = Character->GetPhysicsPowerLocation();
+				//if (PhysicsHandle != nullptr)
+				//{
+				//	PhysicsHandle->GrabComponentAtLocation(Prop->FindComponentByClass<UPrimitiveComponent>(), TEXT("Magnet"), FinalLocation);
+				//}
+				Prop->FlyTowards(PowerLocation, MagnetForce);
+				/*Prop->GetRootComponent()->AttachToComponent(PowerLocation, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));*/
+				MagnetizedProps.Add(Prop);
 				//FLatentActionInfo LatentInfo;
 				//LatentInfo.CallbackTarget = this;
 				//LatentInfo.UUID = MagnetizedProps.Num();
 				////LatentInfo.ExecutionFunction = TEXT("AttachProps");
 				////LatentInfo.Linkage = 1;
 				//UKismetSystemLibrary::MoveComponentTo(Prop->GetRootComponent(), FVector::ZeroVector, Prop->GetRootComponent()->RelativeRotation, false, false, MagnetDuration, false, EMoveComponentAction::Type::Move, LatentInfo);
-				MagnetizedProps.Add(Prop);
 			}
 		}
 	}
