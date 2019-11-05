@@ -70,13 +70,15 @@ void AProps::SetGravitySimulation(bool bState)
 }
 
 /** Remove physical sims, move the prop towards a target */
-void AProps::FlyTowards(USceneComponent* NewParent, float Speed)
+void AProps::FlyTowards(USceneComponent* NewParent, float Speed, float MagnetizationRadius)
 {
-	SetPhysicSimulation(false);
+	//SetPhysicSimulation(false);
 
-	GetRootComponent()->AttachToComponent(NewParent, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
+	//GetRootComponent()->AttachToComponent(NewParent, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
 
-	//PropsMovementComponent->MoveAutomaticallyTo(NewParent, Speed);
+	//PropsMovementComponent->MoveAutomaticallyTo(NewParent, Speed, MagnetizationRadius);
+
+	Mesh->AddForce((NewParent->GetComponentLocation() - GetRootComponent()->GetComponentLocation()).GetSafeNormal() * Speed, NAME_None, true);
 
 	Mesh->SetCollisionProfileName(TEXT("PropsHeld"));
 }
@@ -86,7 +88,7 @@ void AProps::FlyStop()
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 	SetPhysicSimulation(true);
-	//PropsMovementComponent->StopAutomaticMovement();
+	PropsMovementComponent->StopAutomaticMovement();
 	Mesh->SetCollisionProfileName(TEXT("Props"));
 }
 

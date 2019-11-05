@@ -28,7 +28,7 @@ public:
 
 	virtual float GetMaxSpeed() const override { return MaxSpeed; }
 
-	virtual void MoveAutomaticallyTo(class USceneComponent* Target, float Speed);
+	virtual void MoveAutomaticallyTo(class USceneComponent* Target, float Speed, float StopRange);
 
 	virtual void StopAutomaticMovement();
 
@@ -92,6 +92,9 @@ protected:
 
 	/** Automatic movement speed */
 	float AutomaticMovementSpeed;
+
+	/** Automatic movement stop range */
+	float AutomaticMovementStopRange;
 
 	/** Sweep parameters for the collision check when moving automatically */
 	FCollisionQueryParams SweepParams;

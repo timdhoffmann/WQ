@@ -31,7 +31,7 @@ public:
 	//void PrepareFly();
 
 	/** Remove physical sims, move the prop towards a target */
-	void FlyTowards(class USceneComponent* NewParent, float Speed);
+	void FlyTowards(class USceneComponent* NewParent, float Speed, float MagnetizationRadius);
 
 	/** Stop the flying */
 	void FlyStop();

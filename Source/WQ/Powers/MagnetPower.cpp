@@ -19,13 +19,14 @@ UMagnetPower::UMagnetPower()
 
 	// Default values
 	MagnetRange = 500.0f;
-	SphereRadius = 40.0f;
+	SphereRadius = 20.0f;
 	MagnetRadius = 50.0f;
-	MagnetDuration = 0.1f;
-	MagnetForce = 10.0f;
+	MagnetForce = 300.0f;
 	bIsTargettingActivated = false;
 	SpinningSpeed = FVector(0.0f, 0.0f, 1.0f);
 	PropulsionForce = 50000.0f;
+	MagnetizationRadius = 40.0f;
+	Identifier = 0;
 }
 
 
@@ -39,9 +40,6 @@ void UMagnetPower::BeginPlay()
 	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius);
 	SweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
-
-	// TO REMOVE
-	SetPowerActive(true);
 }
 
 // Called every frame
@@ -73,9 +71,12 @@ void UMagnetPower::PowerReleased()
 	{
 		bIsTargettingActivated = false;
 
+		Character->ClearAllPhysicHandle();
+
 		for (AProps* Prop : MagnetizedProps)
 		{
-			Prop->FlyStop();
+			//Prop->FlyStop();
+			Prop->SetGravitySimulation(true);
 			Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
 		}
 		MagnetizedProps.Empty();
@@ -96,9 +97,12 @@ void UMagnetPower::UpdateMagnet()
 	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();	
 	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, BiggerSphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
-	PowerLocation->SetWorldLocation(FinalLocation);
-	PowerLocation->AddLocalRotation(FRotator(SpinningSpeed.X, SpinningSpeed.Y, SpinningSpeed.Z));
-	//Character->GetPhysicsPowerLocation()->SetTargetLocation(FinalLocation);
+	//PowerLocation->SetWorldLocation(FinalLocation);
+	//PowerLocation->AddLocalRotation(FRotator(SpinningSpeed.X, SpinningSpeed.Y, SpinningSpeed.Z));
+	for (UPhysicsHandleComponent* PH : Character->GetPhysicHandles())
+	{
+		PH->SetTargetLocation(FinalLocation);
+	}
 	DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
@@ -110,7 +114,13 @@ void UMagnetPower::UpdateMagnet()
 			AProps* Prop = Cast<AProps>(Res.Actor);
 			if (Prop != nullptr && !MagnetizedProps.Contains(Prop))
 			{
-				Prop->FlyTowards(PowerLocation, MagnetForce);
+				TArray<UPrimitiveComponent*> PrimComps;
+				Prop->GetComponents<UPrimitiveComponent>(PrimComps);
+				UPhysicsHandleComponent* PH = Character->GetUnusedPhysicHandle();
+				PH->SetTargetLocation(FinalLocation); // Make sure the location is set correctly in case this is a new physic handle
+				PH->GrabComponentAtLocation(PrimComps[0], FName("", MagnetizedProps.Num()), FinalLocation);
+				Prop->SetGravitySimulation(false);
+				Prop->FlyTowards(PowerLocation, MagnetForce, MagnetizationRadius);
 				MagnetizedProps.Add(Prop);
 			}
 		}

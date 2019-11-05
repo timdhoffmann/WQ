@@ -33,20 +33,20 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 	if (bShouldMoveAutomatically)
 	{
 		// Stop the movement if we are close enough
-		if (FVector::DistSquared(UpdatedComponent->GetComponentLocation(), MoveTarget->GetComponentLocation()) <= 1.0f)
+		if (FVector::DistSquared(UpdatedComponent->GetComponentLocation(), MoveTarget->GetComponentLocation()) <= AutomaticMovementStopRange * AutomaticMovementStopRange)
 		{
 			//UpdatedComponent->SetWorldLocation(MoveTarget->GetComponentLocation());
 			bShouldMoveAutomatically = false;
 			return;
 		}
 
-		Velocity = (MoveTarget->GetComponentLocation() - UpdatedComponent->GetComponentLocation()) * AutomaticMovementSpeed;
+		Velocity = (MoveTarget->GetComponentLocation() - UpdatedComponent->GetComponentLocation()).GetSafeNormal() * AutomaticMovementSpeed;
 
-		// Add gravity
-		if (bIsGravityEnabled)
-		{
-			Velocity = ComputeFallVelocity(Velocity, DeltaTime);
-		}
+		//// Add gravity
+		//if (bIsGravityEnabled)
+		//{
+		//	Velocity = ComputeFallVelocity(Velocity, DeltaTime);
+		//}
 
 		LimitWorldBounds();
 		bPositionCorrected = false;
@@ -59,36 +59,35 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 			const FVector OldLocation = UpdatedComponent->GetComponentLocation();
 			const FQuat Rotation = UpdatedComponent->GetComponentQuat();
 
-			FHitResult Hit(1.f);
-			// Update the raycast
-			UWorld* const World = GetWorld();
-			if (!World)
-			{
-				UE_LOG(LogTemp, Error, TEXT("PropsMovement: World not found!"));
-			}
-			World->LineTraceSingleByChannel(Hit, OldLocation, OldLocation + Delta, ECollisionChannel::ECC_GameTraceChannel3, SweepParams);
-
-			if (Hit.IsValidBlockingHit())
-			{
-				bShouldMoveAutomatically = false;
-				return;
-			}
-
-			//SafeMoveUpdatedComponent(Delta / 2.0f, Rotation, true, Hit);
+			//FHitResult Hit(1.f);
+			//// Update the raycast
+			//UWorld* const World = GetWorld();
+			//if (!World)
+			//{
+			//	UE_LOG(LogTemp, Error, TEXT("PropsMovement: World not found!"));
+			//}
+			//World->LineTraceSingleByChannel(Hit, OldLocation, OldLocation + Delta, ECollisionChannel::ECC_GameTraceChannel3, SweepParams);
 
 			//if (Hit.IsValidBlockingHit())
 			//{
-			//	//// Stop the movement if we hit another prop
-			//	//if (Cast<AProps>(Hit.GetActor()) != nullptr)
-			//	//{
-			//	//	bShouldMoveAutomatically = false;
-			//	//	return;
-			//	//}
-
-			//	//HandleImpact(Hit, DeltaTime, Delta);
-			//	//// Try to slide the remaining distance along the surface.
-			//	//SlideAlongSurface(Delta, 1.f - Hit.Time, Hit.Normal, Hit, true);
+			//	bShouldMoveAutomatically = false;
+			//	return;
 			//}
+			//else
+			//{
+			//	UpdatedComponent->MoveComponent(Delta, Rotation, false, nullptr, EMoveComponentFlags::MOVECOMP_NoFlags, ETeleportType::ResetPhysics);
+			//}
+
+			FHitResult HitSafe(1.f);
+
+			SafeMoveUpdatedComponent(Delta, Rotation, true, HitSafe);
+
+			if (HitSafe.IsValidBlockingHit())
+			{
+				HandleImpact(HitSafe, DeltaTime, Delta);
+				// Try to slide the remaining distance along the surface.
+				SlideAlongSurface(Delta, 1.f - HitSafe.Time, HitSafe.Normal, HitSafe, true);
+			}
 
 			// Update velocity
 			// We don't want position changes to vastly reverse our direction (which can happen due to penetration fixups etc)
@@ -264,11 +263,12 @@ FVector UPropsMovement::ComputeFallVelocity(const FVector& InitialVelocity, floa
 	return FallVelocity;
 }
 
-void UPropsMovement::MoveAutomaticallyTo(USceneComponent* Target, float Speed)
+void UPropsMovement::MoveAutomaticallyTo(USceneComponent* Target, float Speed, float StopRange)
 {
 	bShouldMoveAutomatically = true;
 	MoveTarget = Target;
 	AutomaticMovementSpeed = Speed;
+	AutomaticMovementStopRange = StopRange;
 }
 
 void UPropsMovement::StopAutomaticMovement()

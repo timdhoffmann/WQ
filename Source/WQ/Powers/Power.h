@@ -25,6 +25,9 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "Power")
 	virtual void SetPowerActive(bool bState);
 
+	/** Getter for the identifier */
+	virtual int GetIdentifier() const { return Identifier; }
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
@@ -45,4 +48,7 @@ protected:
 	// Where the power effects will be positioned
 	UPROPERTY()
 	class USceneComponent* PowerLocation;
+
+	/** Identifier to see in which position the power is */
+	int Identifier;
 };

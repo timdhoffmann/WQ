@@ -7,8 +7,10 @@
 #include "Power.h"
 #include "MagnetPower.generated.h"
 
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+/**
+ * Magnet power implementation
+ */
+UCLASS( ClassGroup=(Powers), meta=(BlueprintSpawnableComponent) )
 class WQ_API UMagnetPower : public UPower
 {
 	GENERATED_BODY()
@@ -45,13 +47,13 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetRadius;
 
-	// Duration of the snapping
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
-	float MagnetDuration;
-
 	// Force of the magnetization
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetForce;
+
+	// Radius at which the magnetized props will be pulled
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float MagnetizationRadius;
 
 	// Speed of the spinning
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")

@@ -10,6 +10,8 @@ class UInputComponent;
 
 DECLARE_EVENT(AWQCharacter, FPowerPressed)
 DECLARE_EVENT(AWQCharacter, FPowerReleased)
+DECLARE_EVENT(AWQCharacter, FFirePressed)
+DECLARE_EVENT(AWQCharacter, FFireReleased)
 
 UCLASS(config=Game)
 class AWQCharacter : public ACharacter
@@ -27,11 +29,23 @@ public:
 
 	/** Returns the Power Location scene component **/
 	class USceneComponent* GetPowerLocation() const { return FP_PowerLocation; }
-	//class UPhysicsHandleComponent* GetPhysicsPowerLocation() const { return FP_PhysicsPowerLocation; }
+	
+	/** Returns the Physic Handles */
+	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+
+	/** Get or add a physic handle and returns a ref to it */
+	UPhysicsHandleComponent* GetUnusedPhysicHandle();
+
+	/** Clear all physic handle */
+	void ClearAllPhysicHandle();
 
 	// Accessor to the power events
 	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
 	FPowerReleased& OnPowerReleased() { return PowerReleasedEvent; }
+
+	// Accessor to the fire events
+	FFirePressed& OnFirePressed() { return FirePressedEvent; }
+	FFireReleased& OnFireReleased() { return FireReleasedEvent; }
 
 protected:
 	virtual void BeginPlay();
@@ -66,6 +80,21 @@ protected:
 	void PowerPressed();
 	UFUNCTION()
 	void PowerReleased();
+
+	/** Fire binding methods, called by the input */
+	UFUNCTION()
+	void FirePressed();
+	UFUNCTION()
+	void FireReleased();
+
+	/** Power switching methods, called by the input */
+	UFUNCTION()
+	void SwitchPowerUp();
+	UFUNCTION()
+	void SwitchPowerDown();
+
+	/** Add a physic handle */
+	void AddPhysicHandle(int Index, bool bIsRuntime = false);
 
 protected:
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
@@ -118,12 +147,28 @@ protected:
 	// Called when the player releases the power input
 	FPowerReleased PowerReleasedEvent;
 
+	// Called when the player presses the fire input
+	FFirePressed FirePressedEvent;
+
+	// Called when the player releases the fire input
+	FFireReleased FireReleasedEvent;
+
 	/** Location of the effects of the power */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Powers)
 	USceneComponent* FP_PowerLocation;
 
-	///** Location of the effects of the power, for physical simulations */
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Power)
-	//UPhysicsHandleComponent* FP_PhysicsPowerLocation;
+	/** Physic handles list */
+	UPROPERTY()
+	TArray<UPhysicsHandleComponent*> PhysicHandles;
+
+	/** Current number of physic handles used */
+	int HandlesUsed;
+
+	/** List of powers */
+	UPROPERTY()
+	TArray<class UPower*> Powers;
+
+	/** Index of the current power */
+	int PowerIndex;
 };
 
