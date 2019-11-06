@@ -8,6 +8,7 @@
 
 class UBehaviorTree;
 class UBlackboardComponent;
+class UAISenseConfig_Sight;
 
 /**
  * 
@@ -32,9 +33,18 @@ public:
 
     void                    BeginPlay() override;
     void                    OnMoveCompleted( FAIRequestID RequestID, const FPathFollowingResult& Result ) override;
+    void                    Tick( float DeltaTime ) override;
+
+    UFUNCTION()
+    void                    OnActorInSight( const TArray<AActor*>& visibleActors );
 
 private:
     FTimerHandle            TimerHandle;
+    UAISenseConfig_Sight*   SightConfiguration;
+
+    AActor*                 NextActorToReach;
+    FVector                 NextActorPosition;
+    float                   NextActorDistance;
 
 private:
     UFUNCTION()
@@ -42,4 +52,5 @@ private:
 
     UFUNCTION()
     void                    GoToRandomWaypoint();
+
 };

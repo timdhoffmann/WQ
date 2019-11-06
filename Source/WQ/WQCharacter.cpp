@@ -17,6 +17,10 @@
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Powers/Power.h"
 
+#include "Runtime/AIModule/Classes/Perception/AIPerceptionComponent.h"
+#include "Runtime/AIModule/Classes/Perception/AISense_Sight.h"
+#include "Runtime/AIModule/Classes/Perception/AISense_Hearing.h"
+
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 //////////////////////////////////////////////////////////////////////////
@@ -43,6 +47,9 @@ void AWQCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+
+    UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Sight::StaticClass(), this );
+    UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Hearing::StaticClass(), this );
 
 	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
