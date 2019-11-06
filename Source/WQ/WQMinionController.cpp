@@ -17,6 +17,8 @@
 
 #include <limits>
 
+#include "Enemies/WQAICharacter.h"
+
 AWQMinionController::AWQMinionController()
 {
     static ConstructorHelpers::FObjectFinder<UBehaviorTree> btFinder( TEXT( "/Game/_Dev/Baptiste/AI/BT_Minion" ) );
@@ -31,9 +33,9 @@ AWQMinionController::AWQMinionController()
 
     // Setup the perception component
     PerceptionComponent = CreateDefaultSubobject<UAIPerceptionComponent>( TEXT( "AIPerception Component" ) );
-    SightConfiguration = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
 
     // Configure the Sight Sense of AI Perception
+    UAISenseConfig_Sight* SightConfiguration = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
     SightConfiguration->SightRadius = 1000.0f;
     SightConfiguration->LoseSightRadius = 1500.0f;
     SightConfiguration->PeripheralVisionAngleDegrees = 360.0f;
@@ -51,9 +53,10 @@ AWQMinionController::AWQMinionController()
     SetPerceptionComponent( *PerceptionComponent );
 
     NextActorToReach = nullptr;
-    NextActorPosition = FVector::ZeroVector;
     NextActorDistance = std::numeric_limits<float>::max();
 
+    // TODO Investigate if 3D AI Sight worth a try?
+    // Right now, the plugin API is crappy and doesnt work w/ Actor targets...
     PrimaryActorTick.bCanEverTick = true; //We won't be ticked by default  
 }
 
@@ -65,10 +68,6 @@ void AWQMinionController::BeginPlay()
     NextActorPosition = FVector::ZeroVector;
     NextActorDistance = std::numeric_limits<float>::max();
 
-    UGameplayStatics::GetAllActorsOfClass( GetWorld(), ATargetPoint::StaticClass(), Waypoints );
-    
-    //GoToRandomWaypoint();
-
     RunBehaviorTree( BehaviorTree );
 }
 
@@ -76,23 +75,34 @@ void AWQMinionController::Tick( float DeltaTime )
 {
     Super::Tick( DeltaTime ); 
 
+    AWQAICharacter* character = reinterpret_cast< AWQAICharacter* >( GetCharacter() );
+
+/* 
+    // HP API Test stuff
+    character->ApplyDamages( 1.0f );
+    GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Red, FString( "HP: " + FString::SanitizeFloat( character->GetHealth() ) ) );
+*/
+
     if ( NextActorToReach != nullptr ) {
-        BlackboardComponent->SetValueAsVector( TEXT( "MoveToLocationKey" ), NextActorToReach->GetTransform().GetTranslation() );
+        NextActorPosition = NextActorToReach->GetActorLocation();
+
+        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion() );
+
+        BlackboardComponent->SetValueAsVector( TEXT( "MoveToLocationKey" ), NextActorPosition );
     }
 }
 
 void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
 {
-    FVector minionWorldPosition = RootComponent->GetComponentTransform().GetTranslation();
+    AWQAICharacter* character = reinterpret_cast< AWQAICharacter* >( GetCharacter() );
+    const FVector minionWorldPosition = character->GetActorLocation();
 
     NextActorToReach = nullptr;
     NextActorPosition = FVector::ZeroVector;
     NextActorDistance = std::numeric_limits<float>::max();
 
-    GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Yellow, "Iterating visible actors" );
-    
     for ( AActor* actor : visibleActors ) {
-        FVector actorTranslation = actor->GetTransform().GetTranslation();
+        FVector actorTranslation = actor->GetActorLocation();
         float distanceToMinion = FVector::Distance( actorTranslation, minionWorldPosition );
 
         if ( distanceToMinion < NextActorDistance ) {
@@ -103,34 +113,11 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
     }
 
     if ( NextActorToReach != nullptr ) {
-        // ty Epic retards...
-        FTransform& transform = const_cast<FTransform&>( RootComponent->GetComponentTransform() );
-        transform.SetRotation( UKismetMathLibrary::FindLookAtRotation( transform.GetTranslation(), NextActorPosition ).Quaternion() );
+        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion() );
+        character->TransitionState( EAIStateEnum::AISE_InChase );
 
         BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
-
-        GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Red, "I'm coming for you..." );
+    } else {
+        character->TransitionState( EAIStateEnum::AISE_Alive );
     }
-}
-
-void AWQMinionController::OnMoveCompleted( FAIRequestID RequestID, const FPathFollowingResult & Result )
-{
-    Super::OnMoveCompleted( RequestID, Result );
-
-    NextActorToReach = nullptr;
-    NextActorPosition = FVector::ZeroVector;
-    NextActorDistance = std::numeric_limits<float>::max();
-}
-
-ATargetPoint* AWQMinionController::GetRandomWaypoint()
-{
-    int64 index = FMath::RandRange( 0, Waypoints.Num() - 1 );
-    return Cast<ATargetPoint>( Waypoints[index] );
-}
-
-void AWQMinionController::GoToRandomWaypoint()
-{
-    ATargetPoint* waypoint = GetRandomWaypoint();
-    FVector pointTranslation = waypoint->GetTransform().GetTranslation();
-    BlackboardComponent->SetValueAsVector( TEXT( "MoveToLocationKey" ), pointTranslation );
 }

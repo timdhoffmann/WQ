@@ -20,9 +20,6 @@ class WQ_API AWQMinionController : public AAIController
 
 public:
     UPROPERTY( EditAnywhere, BlueprintReadWrite )
-    TArray<AActor*>         Waypoints;
-
-    UPROPERTY( EditAnywhere, BlueprintReadWrite )
     UBehaviorTree*          BehaviorTree;
 
     UPROPERTY( EditAnywhere, BlueprintReadWrite )
@@ -32,25 +29,13 @@ public:
                             AWQMinionController();
 
     void                    BeginPlay() override;
-    void                    OnMoveCompleted( FAIRequestID RequestID, const FPathFollowingResult& Result ) override;
     void                    Tick( float DeltaTime ) override;
 
     UFUNCTION()
     void                    OnActorInSight( const TArray<AActor*>& visibleActors );
 
 private:
-    FTimerHandle            TimerHandle;
-    UAISenseConfig_Sight*   SightConfiguration;
-
     AActor*                 NextActorToReach;
     FVector                 NextActorPosition;
     float                   NextActorDistance;
-
-private:
-    UFUNCTION()
-    ATargetPoint*           GetRandomWaypoint();
-
-    UFUNCTION()
-    void                    GoToRandomWaypoint();
-
 };
