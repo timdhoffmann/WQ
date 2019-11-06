@@ -20,12 +20,11 @@ UMagnetPower::UMagnetPower()
 	// Default values
 	MagnetRange = 500.0f;
 	SphereRadius = 20.0f;
-	MagnetRadius = 50.0f;
-	MagnetForce = 300.0f;
+	MagnetRadius = 60.0f;
+	MagnetForce = 100000.0f;
 	bIsTargettingActivated = false;
-	SpinningSpeed = FVector(0.0f, 0.0f, 1.0f);
-	PropulsionForce = 50000.0f;
-	MagnetizationRadius = 40.0f;
+	PropulsionForce = 500000.0f;
+	MagnetizationRadiusCoeff = 0.8f;
 	Identifier = 0;
 }
 
@@ -75,9 +74,11 @@ void UMagnetPower::PowerReleased()
 
 		for (AProps* Prop : MagnetizedProps)
 		{
-			//Prop->FlyStop();
-			Prop->SetGravitySimulation(true);
-			Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
+			if (Prop != nullptr)
+			{
+				Prop->FlyStop();
+				Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
+			}
 		}
 		MagnetizedProps.Empty();
 	}
@@ -97,8 +98,6 @@ void UMagnetPower::UpdateMagnet()
 	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();	
 	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, BiggerSphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
-	//PowerLocation->SetWorldLocation(FinalLocation);
-	//PowerLocation->AddLocalRotation(FRotator(SpinningSpeed.X, SpinningSpeed.Y, SpinningSpeed.Z));
 	for (UPhysicsHandleComponent* PH : Character->GetPhysicHandles())
 	{
 		PH->SetTargetLocation(FinalLocation);
@@ -118,9 +117,10 @@ void UMagnetPower::UpdateMagnet()
 				Prop->GetComponents<UPrimitiveComponent>(PrimComps);
 				UPhysicsHandleComponent* PH = Character->GetUnusedPhysicHandle();
 				PH->SetTargetLocation(FinalLocation); // Make sure the location is set correctly in case this is a new physic handle
-				PH->GrabComponentAtLocation(PrimComps[0], FName("", MagnetizedProps.Num()), FinalLocation);
-				Prop->SetGravitySimulation(false);
-				Prop->FlyTowards(PowerLocation, MagnetForce, MagnetizationRadius);
+				FVector Direction = FinalLocation - Prop->GetActorLocation();
+				FVector GrabLocation = Prop->GetActorLocation() + Direction * MagnetizationRadiusCoeff;
+				PH->GrabComponentAtLocation(PrimComps[0], FName("", MagnetizedProps.Num()), GrabLocation);
+				Prop->FlyTowards(FinalLocation, MagnetForce);
 				MagnetizedProps.Add(Prop);
 			}
 		}

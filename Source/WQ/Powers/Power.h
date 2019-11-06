@@ -45,10 +45,6 @@ protected:
 	UPROPERTY()
 	class AWQCharacter* Character;
 
-	// Where the power effects will be positioned
-	UPROPERTY()
-	class USceneComponent* PowerLocation;
-
 	/** Identifier to see in which position the power is */
 	int Identifier;
 };

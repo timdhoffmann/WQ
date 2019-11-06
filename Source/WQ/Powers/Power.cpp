@@ -25,8 +25,6 @@ void UPower::BeginPlay()
 	{
 		UE_LOG(LogTemp, Error, TEXT("POWER: Character not found!"));
 	}
-
-	PowerLocation = Character->GetPowerLocation();
 }
 
 
