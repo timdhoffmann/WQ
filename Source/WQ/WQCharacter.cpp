@@ -14,6 +14,8 @@
 #include "Managers/AudioManager.h"
 #include "Math/UnrealMathUtility.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Powers/Power.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -28,6 +30,13 @@ AWQCharacter::AWQCharacter()
 	BaseLookUpRate = 45.f;
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
+
+	// Create the needed handles
+	for (int i = 0; i < 10; i++)
+	{
+		AddPhysicHandle(i);
+	}
+	HandlesUsed = 0;
 }
 
 void AWQCharacter::BeginPlay()
@@ -40,6 +49,24 @@ void AWQCharacter::BeginPlay()
 
 	// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
 	Mesh1P->SetHiddenInGame(false, true);
+
+	// Get all the powers attached and sort them by identifier
+	GetComponents<UPower>(Powers);
+	Powers.Sort([](const UPower& A, const UPower& B) {
+		return A.GetIdentifier() < B.GetIdentifier();
+		});
+
+	// Activate the fire and the first power
+	PowerIndex = 0;
+	if (Powers.Num() > 0)
+	{
+		Powers[PowerIndex]->SetPowerActive(true); // Fire
+	}
+	if (Powers.Num() > 1)
+	{
+		PowerIndex++;
+		Powers[PowerIndex]->SetPowerActive(true); // First power
+	}
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -54,9 +81,6 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	// Bind fire event
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::OnFire);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AWQCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWQCharacter::MoveRight);
@@ -68,6 +92,58 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("TurnRate", this, &AWQCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AWQCharacter::LookUpAtRate);
+
+	// Bind power event
+	PlayerInputComponent->BindAction("Power", IE_Pressed, this, &AWQCharacter::PowerPressed);
+	PlayerInputComponent->BindAction("Power", IE_Released, this, &AWQCharacter::PowerReleased);
+
+	// Bind fire event
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::FirePressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AWQCharacter::FireReleased);
+
+	//// Bind switching power events
+	//PlayerInputComponent->BindAction("SwitchPowerUp", IE_Pressed, this, &AWQCharacter::SwitchPowerUp);
+	//PlayerInputComponent->BindAction("SwitchPowerDown", IE_Pressed, this, &AWQCharacter::SwitchPowerDown);
+}
+
+/** Power pressed, called by the input */
+void AWQCharacter::PowerPressed()
+{
+	PowerPressedEvent.Broadcast();
+}
+
+/** Power released, called by the input */
+void AWQCharacter::PowerReleased()
+{
+	PowerReleasedEvent.Broadcast();
+}
+
+/** Fire pressed, called by the input */
+void AWQCharacter::FirePressed()
+{
+	FirePressedEvent.Broadcast();
+}
+
+/** Fire released, called by the input */
+void AWQCharacter::FireReleased()
+{
+	FireReleasedEvent.Broadcast();
+}
+
+/** Switching power with the mouse wheel up, called by the input */
+void AWQCharacter::SwitchPowerUp()
+{
+	Powers[PowerIndex]->SetPowerActive(false);
+	PowerIndex = (PowerIndex + 1) % Powers.Num();
+	Powers[PowerIndex]->SetPowerActive(true);
+}
+
+/** Switching power with the mouse wheel down, called by the input */
+void AWQCharacter::SwitchPowerDown()
+{
+	Powers[PowerIndex]->SetPowerActive(false);
+	PowerIndex = (PowerIndex - 1) % Powers.Num();
+	Powers[PowerIndex]->SetPowerActive(true);
 }
 
 void AWQCharacter::OnFire()
@@ -155,4 +231,61 @@ void AWQCharacter::LookUpAtRate(float Rate)
 {
 	// calculate delta for this frame from the rate information
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
+}
+
+/** Physic handles management */
+UPhysicsHandleComponent* AWQCharacter::GetUnusedPhysicHandle()
+{
+	if (HandlesUsed >= PhysicHandles.Num())
+	{
+		AddPhysicHandle(PhysicHandles.Num(), true);
+	}
+
+	UPhysicsHandleComponent* PhysicHandle = PhysicHandles[HandlesUsed];
+	PhysicHandle->SetActive(true);
+	HandlesUsed++;
+	return PhysicHandle;
+}
+
+/** Clear all physic handle */
+void AWQCharacter::ClearAllPhysicHandle()
+{
+	for (UPhysicsHandleComponent* PhysicHandle : PhysicHandles)
+	{
+		PhysicHandle->ReleaseComponent();
+		PhysicHandle->SetActive(false);
+	}
+	HandlesUsed = 0;
+}
+
+/** Add a physic handle */
+void AWQCharacter::AddPhysicHandle(int Index, bool bIsRuntime)
+{
+	UPhysicsHandleComponent* PhysicHandle;
+
+	if (!bIsRuntime)
+	{
+		PhysicHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName(TEXT("PhysicHandle"), Index));
+	}
+	else
+	{
+		PhysicHandle = NewObject<UPhysicsHandleComponent>(this, FName(TEXT("RuntimePhysicHandle"), Index));
+		if (PhysicHandle)
+		{
+			this->AddInstanceComponent(PhysicHandle);
+			PhysicHandle->OnComponentCreated();
+			PhysicHandle->RegisterComponent();
+		}
+	}
+
+	if (PhysicHandle)
+	{
+		PhysicHandle->SetLinearDamping(0.01f);
+		PhysicHandle->SetLinearStiffness(1000000000.0f);
+		PhysicHandle->SetAngularDamping(0.01f);
+		PhysicHandle->SetAngularStiffness(1000000000.0f);
+		PhysicHandle->SetInterpolationSpeed(1000000000.0f);
+		PhysicHandle->SetActive(false);
+		PhysicHandles.Add(PhysicHandle);
+	}
 }

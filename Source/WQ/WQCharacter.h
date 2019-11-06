@@ -8,6 +8,11 @@
 
 class UInputComponent;
 
+DECLARE_EVENT(AWQCharacter, FPowerPressed)
+DECLARE_EVENT(AWQCharacter, FPowerReleased)
+DECLARE_EVENT(AWQCharacter, FFirePressed)
+DECLARE_EVENT(AWQCharacter, FFireReleased)
+
 UCLASS(config=Game)
 class AWQCharacter : public ACharacter
 {
@@ -18,8 +23,29 @@ public:
 
 	/** Returns Mesh1P subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
+
+	/** Returns the Power Location scene component **/
+	class USceneComponent* GetPowerLocation() const { return FP_PowerLocation; }
+	
+	/** Returns the Physic Handles */
+	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+
+	/** Get or add a physic handle and returns a ref to it */
+	UPhysicsHandleComponent* GetUnusedPhysicHandle();
+
+	/** Clear all physic handle */
+	void ClearAllPhysicHandle();
+
+	// Accessor to the power events
+	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
+	FPowerReleased& OnPowerReleased() { return PowerReleasedEvent; }
+
+	// Accessor to the fire events
+	FFirePressed& OnFirePressed() { return FirePressedEvent; }
+	FFireReleased& OnFireReleased() { return FireReleasedEvent; }
 
 protected:
 	virtual void BeginPlay();
@@ -49,22 +75,43 @@ protected:
 	virtual void SetupPlayerInputComponent(UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	/** Power binding methods, called by the input */
+	UFUNCTION()
+	void PowerPressed();
+	UFUNCTION()
+	void PowerReleased();
+
+	/** Fire binding methods, called by the input */
+	UFUNCTION()
+	void FirePressed();
+	UFUNCTION()
+	void FireReleased();
+
+	/** Power switching methods, called by the input */
+	UFUNCTION()
+	void SwitchPowerUp();
+	UFUNCTION()
+	void SwitchPowerDown();
+
+	/** Add a physic handle */
+	void AddPhysicHandle(int Index, bool bIsRuntime = false);
+
 protected:
 	/** Pawn mesh: 1st person view (arms; seen only by self) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-		class USkeletalMeshComponent* Mesh1P;
+	class USkeletalMeshComponent* Mesh1P;
 
 	/** Gun mesh: 1st person view (seen only by self) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-		class USkeletalMeshComponent* FP_Gun;
+	class USkeletalMeshComponent* FP_Gun;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-		class USceneComponent* FP_MuzzleLocation;
+	USceneComponent* FP_MuzzleLocation;
 
 	/** First person camera */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
-		class UCameraComponent* FirstPersonCameraComponent;
+	class UCameraComponent* FirstPersonCameraComponent;
 
 	/** Base turn rate, in deg/sec. Other scaling may affect final turn rate. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera)
@@ -93,5 +140,35 @@ protected:
 	/** HeadBob shake blueprint */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
 	TSubclassOf<class UCameraShake> HeadbobShake;
+
+	// Called when the player presses the power input
+	FPowerPressed PowerPressedEvent;
+
+	// Called when the player releases the power input
+	FPowerReleased PowerReleasedEvent;
+
+	// Called when the player presses the fire input
+	FFirePressed FirePressedEvent;
+
+	// Called when the player releases the fire input
+	FFireReleased FireReleasedEvent;
+
+	/** Location of the effects of the power */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Powers)
+	USceneComponent* FP_PowerLocation;
+
+	/** Physic handles list */
+	UPROPERTY()
+	TArray<UPhysicsHandleComponent*> PhysicHandles;
+
+	/** Current number of physic handles used */
+	int HandlesUsed;
+
+	/** List of powers */
+	UPROPERTY()
+	TArray<class UPower*> Powers;
+
+	/** Index of the current power */
+	int PowerIndex;
 };
 
