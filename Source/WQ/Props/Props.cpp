@@ -97,3 +97,9 @@ void AProps::Propulse(FVector Direction, float Strength)
 	Mesh->AddForce(Direction * Strength * Mesh->GetMassScale(), NAME_None, true);
 }
 
+/** Set a material */
+void AProps::SetMaterial(class UMaterial* Mat)
+{
+	Mesh->SetMaterial(0, Mat);
+}
+

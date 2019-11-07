@@ -78,6 +78,7 @@ void UMagnetPower::PowerReleased()
 			{
 				Prop->FlyStop();
 				Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
+				Prop->SetMaterial(Mat1);
 			}
 		}
 		MagnetizedProps.Empty();
@@ -122,6 +123,7 @@ void UMagnetPower::UpdateMagnet()
 				PH->GrabComponentAtLocation(PrimComps[0], FName("", MagnetizedProps.Num()), GrabLocation);
 				Prop->FlyTowards(FinalLocation, MagnetForce);
 				MagnetizedProps.Add(Prop);
+				Prop->SetMaterial(Mat2);
 			}
 		}
 	}

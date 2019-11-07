@@ -70,4 +70,10 @@ protected:
 	/** Props list */
 	UPROPERTY()
 	TArray<class AProps*> MagnetizedProps;
+
+	/** Temporary materials for video */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UMaterial* Mat1;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UMaterial* Mat2;
 };

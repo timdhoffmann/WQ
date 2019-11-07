@@ -39,6 +39,9 @@ public:
 	/** Propulse physically */
 	void Propulse(FVector Direction, float Strength);
 
+	/** Set a material */
+	void SetMaterial(class UMaterial* Mat);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
