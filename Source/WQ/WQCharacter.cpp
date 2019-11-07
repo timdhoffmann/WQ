@@ -12,6 +12,7 @@
 #include "MotionControllerComponent.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
+#include "Managers/PauseManager.h"
 #include "Math/UnrealMathUtility.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "PhysicsEngine/PhysicsHandleComponent.h"
@@ -101,6 +102,9 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::FirePressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AWQCharacter::FireReleased);
 
+    // Bind misc event
+    PlayerInputComponent->BindAction( "Pause", IE_Pressed, this, &AWQCharacter::PauseTriggered ).bExecuteWhenPaused = true;
+
 	//// Bind switching power events
 	//PlayerInputComponent->BindAction("SwitchPowerUp", IE_Pressed, this, &AWQCharacter::SwitchPowerUp);
 	//PlayerInputComponent->BindAction("SwitchPowerDown", IE_Pressed, this, &AWQCharacter::SwitchPowerDown);
@@ -144,6 +148,12 @@ void AWQCharacter::SwitchPowerDown()
 	Powers[PowerIndex]->SetPowerActive(false);
 	PowerIndex = (PowerIndex - 1) % Powers.Num();
 	Powers[PowerIndex]->SetPowerActive(true);
+}
+
+void AWQCharacter::PauseTriggered()
+{
+    UE_LOG( LogTemp, Log, TEXT( "Pause has been triggered" ) )
+    reinterpret_cast< UWQGameInstance* >( GetGameInstance() )->PauseManager()->ShowHidePauseMenu();
 }
 
 void AWQCharacter::OnFire()

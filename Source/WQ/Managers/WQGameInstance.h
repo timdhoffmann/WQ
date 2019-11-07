@@ -1,7 +1,10 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #pragma once
+
 class AAudioManager;
+class UPauseManager;
+
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WQGameInstance.generated.h"
@@ -19,6 +22,9 @@ public:
 	UFUNCTION(BlueprintPure, Category = "Persistence")
 	AAudioManager* AudioManager();
 
+    UFUNCTION( BlueprintPure, Category = "Persistence" )
+    UPauseManager* PauseManager();
+
 protected:
 	// This is where we will clean up, as the game is shut down
 	virtual void Shutdown() override;
@@ -32,5 +38,11 @@ protected:
 	TSubclassOf<AAudioManager> AudioManagerBP;
 
 	UPROPERTY()
-	AAudioManager* AudioManagerInstance;
+    AAudioManager* AudioManagerInstance;
+
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Managers" )
+    TSubclassOf<UPauseManager> PauseManagerBP;
+
+    UPROPERTY()
+    UPauseManager* PauseManagerInstance;
 };

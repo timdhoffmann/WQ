@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "WQGameInstance.h"
+
 #include "AudioManager.h"
+#include "PauseManager.h"
 
  // Singleton-like accessor. I only use this as a workaround for PIE
  // The GameInstance lifecycle is different in PIE
@@ -10,6 +12,15 @@ AAudioManager* UWQGameInstance::AudioManager()
 {
 	//return IsValid(AudioManagerInstance) ? AudioManagerInstance : AudioManagerInstance = NewObject<AAudioManager>(this, FName("AudioManager"));
 	return IsValid(AudioManagerInstance) ? AudioManagerInstance : AudioManagerInstance = GetWorld()->SpawnActor<AAudioManager>(AudioManagerBP);
+}
+
+UPauseManager* UWQGameInstance::PauseManager()
+{
+    if ( !IsValid( PauseManagerInstance ) ) {
+        PauseManagerInstance = NewObject<UPauseManager>( this, FName( "PauseManager" ) );
+    }
+
+    return PauseManagerInstance;
 }
 
 // Cleanup. This acts as a quasi-destructor
