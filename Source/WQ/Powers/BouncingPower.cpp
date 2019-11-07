@@ -5,6 +5,7 @@
 #include "WQCharacter.h"
 #include "BouncingBall.h"
 #include "Kismet/GameplayStatics.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values for this component's properties
 UBouncingPower::UBouncingPower()
@@ -15,11 +16,13 @@ UBouncingPower::UBouncingPower()
 
 	// Default values
 	Identifier = -1;
-	bIsThrownBallReachable = false;
 	BallCreationTime = 2.0f;
 	BallUnchargingTime = 0.2f;
 	FinalScale = FVector(0.3f, 0.3f, 0.3f);
 	ProjectionForce = 800000.0f;
+	TelekinesisRadius = 100.0f;
+	TelekinesisRange = 10000.0f;
+	TelekinesisForce = 50.0f;
 }
 
 // Called when the game starts
@@ -45,10 +48,13 @@ void UBouncingPower::BeginPlay()
 	BounceState = EBounceEnum::BE_BallUncharging;
 
 	// Define sweep params
+	Sphere = FCollisionShape::MakeSphere(TelekinesisRadius);
 	SweepParams = FCollisionQueryParams();
+	TelekinesisSweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
+	TelekinesisSweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 	if (BouncingBall)
-		SweepParams.AddIgnoredActor(BouncingBall); // Ignore the ball
+		SweepParams.AddIgnoredActor(BouncingBall); // Ignore the ball only for the sphere
 }
 
 // Behaviour when the power is activated
@@ -73,14 +79,10 @@ void UBouncingPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//if (BounceState == EBounceEnum::BE_BallCharging)
-	//{
-	//	UpdateBallCharge();
-	//}
-	//else if (BounceState == EBounceEnum::BE_BallThrown)
-	//{
-
-	//}
+	if (BounceState == EBounceEnum::BE_BallThrown)
+	{
+		UpdateBallTargetting();
+	}
 }
 
 // Behaviour when the power is pressed
@@ -94,9 +96,10 @@ void UBouncingPower::PowerPressed()
 	}
 	else if (BounceState == EBounceEnum::BE_BallThrown)
 	{
-		if (bIsThrownBallReachable)
+		if (UpdateBallTargetting())
 		{
-			GetBallBack();
+			BouncingBall->GetBallBack(Character->GetFireSceneComponent(), TelekinesisForce, FSimpleCallback::CreateUFunction(this, TEXT("OnTelekinesisFinished")));
+			BounceState = EBounceEnum::BE_BallComingBack;
 		}
 	}
 }
@@ -120,21 +123,50 @@ void UBouncingPower::PowerReleased()
 			UWorld* const World = GetWorld();
 			FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
 			FVector End = Start + 10000.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
-			World->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel10, SweepParams);
+			World->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_Visibility, SweepParams);
 			FVector Target = Hit.IsValidBlockingHit() ? Hit.ImpactPoint : Hit.TraceEnd;
 			FVector Direction = Target - BouncingBall->GetRootComponent()->GetComponentLocation();
 			BouncingBall->Propulse(Direction, ProjectionForce);
+			BounceState = EBounceEnum::BE_BallThrown;
 		}
 	}
 }
 
-// Update the bouncing
-void UBouncingPower::UpdateBallCharge()
+// Update the ball targetting when the ball is thrown
+bool UBouncingPower::UpdateBallTargetting()
 {
+	UWorld* const World = GetWorld();
+	FHitResult Hit(1.f);
+	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
+	FVector End = Start + TelekinesisRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
+	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams);
+	
+	FVector FinalLocation;
+	if (Hit.IsValidBlockingHit())
+	{
+		FVector FinalLocation = Hit.Location;
+
+		DrawDebugSphere(World, FinalLocation, TelekinesisRadius, 32, FColor::White);
+
+		// Raycast to the environment to check that there is nothing blocking
+		Hit.Reset(1.f, false);
+		World->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel2, SweepParams);
+		FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
+
+		if (FVector::DistSquared(Character->GetActorLocation(), FinalScale) < FVector::DistSquared(Character->GetActorLocation(), BlockingLocation))
+		{
+			// TODO: Change HUD + Ball Highlight?
+			return true;
+		}
+	}
+
+	// TODO: Reset HUD
+	return false;
 }
 
-/** Get the ball back once it's thrown */
-void UBouncingPower::GetBallBack()
+// Event called on telekinesis finished
+void UBouncingPower::OnTelekinesisFinished()
 {
-
+	BounceState = EBounceEnum::BE_BallReady;
+	BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }

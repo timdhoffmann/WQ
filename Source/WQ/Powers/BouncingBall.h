@@ -2,6 +2,7 @@
 
 #pragma once
 
+class USceneComponent;
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Managers/EventManager.h"
@@ -28,6 +29,9 @@ public:
 	/** Propulse the ball forward */
 	void Propulse(FVector Direction, float Strength);
 
+	/** Get the ball back with telekinesis */
+	void GetBallBack(USceneComponent* TargetComponent, float Strength, FSimpleCallback Callback);
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -49,6 +53,9 @@ protected:
 	/** Is the ball resizing? */
 	bool bIsBallResizing;
 
+	/** Is current telekinesis'd back ? */
+	bool bIsBallTelekinesisd;
+
 	/** Initial scale */
 	FVector InitialScale;
 
@@ -61,6 +68,12 @@ protected:
 	/** Current scaling speed */
 	float CurrentScalingSpeed;
 
-	/** Current callback for when the scaling is finished */
+	/** Current callback for when the scaling/telekinesis is finished */
 	FSimpleCallback CurrentCallback;
+
+	/** Reference to the scene component to be telekinesis'd back to */
+	USceneComponent* TelekinesisTarget;
+
+	/** Force to be used for the telekinesis */
+	float TelekinesisStrength;
 };

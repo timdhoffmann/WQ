@@ -13,6 +13,7 @@ ABouncingBall::ABouncingBall()
 
 	// Default values
 	bIsBallResizing = false;
+	bIsBallTelekinesisd = false;
 	TargetScale = FVector::OneVector;
 	CurrentScalingStatus = 0.0f;
 	CurrentScalingSpeed = 0.0f;
@@ -46,6 +47,38 @@ void ABouncingBall::Tick(float DeltaTime)
 			CurrentCallback.ExecuteIfBound();
 			bIsBallResizing = false;
 			CurrentCallback.Unbind();
+		}
+	}
+	else if (bIsBallTelekinesisd)
+	{
+		FVector Direction = TelekinesisTarget->GetComponentLocation() - GetRootComponent()->GetComponentLocation();
+
+		// Stop if we are near enough the destination
+		if (Direction.SizeSquared() < 1.0f)
+		{
+			// Change needed parameters
+			bIsBallTelekinesisd = false;
+			SetCollisionProfile(TEXT("BallHeld"));
+			SetGravitySimulation(true);
+
+			// Callback
+			CurrentCallback.ExecuteIfBound();
+			CurrentCallback.Unbind();
+		}
+		else
+		{
+			// Propulse the meshes towards the target
+			GetRootComponent()->SetWorldLocation(FMath::VInterpTo(GetRootComponent()->GetComponentLocation(), TelekinesisTarget->GetComponentLocation(), DeltaTime, TelekinesisStrength));
+
+			//for (UStaticMeshComponent* Mesh : BallMeshes)
+			//{
+			//	if (Mesh != nullptr)
+			//	{
+			//		//SetPhysicSimulation(false);
+			//		//SetPhysicSimulation(true);
+			//		Mesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * TelekinesisStrength * Mesh->GetMassScale(), NAME_None, true);
+			//	}
+			//}
 		}
 	}
 }
@@ -90,10 +123,6 @@ void ABouncingBall::SetPhysicSimulation(bool bState)
 				Mesh->WakeAllRigidBodies();
 			}
 		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("BouncingBall: MESH NOT DEFINED!"));
-		}
 	}
 }
 
@@ -106,10 +135,6 @@ void ABouncingBall::SetGravitySimulation(bool bState)
 		{
 			Mesh->SetEnableGravity(bState);
 		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("BouncingBall: MESH NOT DEFINED!"));
-		}
 	}
 }
 
@@ -121,10 +146,6 @@ void ABouncingBall::SetCollisionProfile(FName CollisionProfileName)
 		if (Mesh != nullptr)
 		{
 			Mesh->SetCollisionProfileName(CollisionProfileName);
-		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("BouncingBall: MESH NOT DEFINED!"));
 		}
 	}
 }
@@ -142,10 +163,26 @@ void ABouncingBall::Propulse(FVector Direction, float Strength)
 			SetPhysicSimulation(true);
 			Mesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * Mesh->GetMassScale(), NAME_None, true);
 		}
-		else
-		{
-			UE_LOG(LogTemp, Error, TEXT("BouncingBall: MESH NOT DEFINED!"));
-		}
 	}
+}
+
+/** Get the ball back with telekinesis */
+void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength, FSimpleCallback Callback)
+{
+	// Deactivate Physics & Gravity
+	SetPhysicSimulation(false);
+	SetGravitySimulation(false);
+
+	// Set the elements of the telekinesis, the propulsion will take place in Tick
+	bIsBallTelekinesisd = true;
+	TelekinesisTarget = TargetComponent;
+	TelekinesisStrength = Strength;
+
+	// Update the new telekinesis callback
+	CurrentCallback.Unbind();
+	CurrentCallback = Callback;
+
+	// Set the correct collision profile
+	SetCollisionProfile(TEXT("BallTelekinesis"));
 }
 

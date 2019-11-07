@@ -75,7 +75,8 @@ void UMagnetPower::PowerPressed()
 	if (!bIsTargettingActivated)
 	{
 		bIsTargettingActivated = true;
-		MagnetIndicator->SetActorActive(true);
+		if (MagnetIndicator)
+			MagnetIndicator->SetActorActive(true);
 	}
 }
 
@@ -99,7 +100,8 @@ void UMagnetPower::PowerReleased()
 			}
 		}
 		MagnetizedProps.Empty();
-		MagnetIndicator->SetActorActive(false);
+		if(MagnetIndicator)
+			MagnetIndicator->SetActorActive(false);
 	}
 }
 
@@ -115,13 +117,16 @@ void UMagnetPower::UpdateMagnet()
 	FHitResult Hit(1.0f);
 	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
 	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();	
-	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, BiggerSphere, SweepParams);
+	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, Sphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
 
 	// Update the indicator location and rotation
-	MagnetIndicator->SetActorLocation(FinalLocation);
-	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FinalLocation, Character->GetActorLocation());
-	MagnetIndicator->SetActorRotation(LookAtRotator);
+	if (MagnetIndicator)
+	{
+		MagnetIndicator->SetActorLocation(FinalLocation);
+		FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FinalLocation, Character->GetActorLocation());
+		MagnetIndicator->SetActorRotation(LookAtRotator);
+	}
 
 	// Update the physic handles location
 	for (UPhysicsHandleComponent* PH : Character->GetPhysicHandles())
