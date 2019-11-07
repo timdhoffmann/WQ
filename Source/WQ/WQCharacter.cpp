@@ -12,7 +12,10 @@
 #include "MotionControllerComponent.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
+#include "Math/UnrealMathUtility.h"
 #include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
+#include "PhysicsEngine/PhysicsHandleComponent.h"
+#include "Powers/Power.h"
 
 DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
@@ -21,69 +24,19 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 AWQCharacter::AWQCharacter()
 {
-	// Set size for collision capsule
-	GetCapsuleComponent()->InitCapsuleSize(55.f, 96.0f);
-	
+	// Default values
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
 	BaseLookUpRate = 45.f;
-
-	// Create a CameraComponent	
-	FirstPersonCameraComponent = CreateDefaultSubobject<UCameraComponent>(TEXT("FirstPersonCamera"));
-	FirstPersonCameraComponent->SetupAttachment(GetCapsuleComponent());
-	FirstPersonCameraComponent->RelativeLocation = FVector(-39.56f, 1.75f, 64.f); // Position the camera
-	FirstPersonCameraComponent->bUsePawnControlRotation = true;
-
-	// Create a mesh component that will be used when being viewed from a '1st person' view (when controlling this pawn)
-	Mesh1P = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("CharacterMesh1P"));
-	Mesh1P->SetOnlyOwnerSee(true);
-	Mesh1P->SetupAttachment(FirstPersonCameraComponent);
-	Mesh1P->bCastDynamicShadow = false;
-	Mesh1P->CastShadow = false;
-	Mesh1P->RelativeRotation = FRotator(1.9f, -19.19f, 5.2f);
-	Mesh1P->RelativeLocation = FVector(-0.5f, -4.4f, -155.7f);
-
-	// Create a gun mesh component
-	FP_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("FP_Gun"));
-	FP_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
-	FP_Gun->bCastDynamicShadow = false;
-	FP_Gun->CastShadow = false;
-	// FP_Gun->SetupAttachment(Mesh1P, TEXT("GripPoint"));
-	FP_Gun->SetupAttachment(RootComponent);
-
-	FP_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("MuzzleLocation"));
-	FP_MuzzleLocation->SetupAttachment(FP_Gun);
-	FP_MuzzleLocation->SetRelativeLocation(FVector(0.2f, 48.4f, -10.6f));
-
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
-	// Note: The ProjectileClass and the skeletal mesh/anim blueprints for Mesh1P, FP_Gun, and VR_Gun 
-	// are set in the derived blueprint asset named MyCharacter to avoid direct content references in C++.
-
-	// Create VR Controllers.
-	R_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("R_MotionController"));
-	R_MotionController->MotionSource = FXRMotionControllerBase::RightHandSourceId;
-	R_MotionController->SetupAttachment(RootComponent);
-	L_MotionController = CreateDefaultSubobject<UMotionControllerComponent>(TEXT("L_MotionController"));
-	L_MotionController->SetupAttachment(RootComponent);
-
-	// Create a gun and attach it to the right-hand VR controller.
-	// Create a gun mesh component
-	VR_Gun = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("VR_Gun"));
-	VR_Gun->SetOnlyOwnerSee(true);			// only the owning player will see this mesh
-	VR_Gun->bCastDynamicShadow = false;
-	VR_Gun->CastShadow = false;
-	VR_Gun->SetupAttachment(R_MotionController);
-	VR_Gun->SetRelativeRotation(FRotator(0.0f, -90.0f, 0.0f));
-
-	VR_MuzzleLocation = CreateDefaultSubobject<USceneComponent>(TEXT("VR_MuzzleLocation"));
-	VR_MuzzleLocation->SetupAttachment(VR_Gun);
-	VR_MuzzleLocation->SetRelativeLocation(FVector(0.000004, 53.999992, 10.000000));
-	VR_MuzzleLocation->SetRelativeRotation(FRotator(0.0f, 90.0f, 0.0f));		// Counteract the rotation of the VR gun model.
-
-	// Uncomment the following line to turn motion controllers on by default:
-	//bUsingMotionControllers = true;
+	// Create the needed handles
+	for (int i = 0; i < 10; i++)
+	{
+		AddPhysicHandle(i);
+	}
+	HandlesUsed = 0;
 }
 
 void AWQCharacter::BeginPlay()
@@ -95,15 +48,24 @@ void AWQCharacter::BeginPlay()
 	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
 
 	// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
-	if (bUsingMotionControllers)
+	Mesh1P->SetHiddenInGame(false, true);
+
+	// Get all the powers attached and sort them by identifier
+	GetComponents<UPower>(Powers);
+	Powers.Sort([](const UPower& A, const UPower& B) {
+		return A.GetIdentifier() < B.GetIdentifier();
+		});
+
+	// Activate the fire and the first power
+	PowerIndex = 0;
+	if (Powers.Num() > 0)
 	{
-		VR_Gun->SetHiddenInGame(false, true);
-		Mesh1P->SetHiddenInGame(true, true);
+		Powers[PowerIndex]->SetPowerActive(true); // Fire
 	}
-	else
+	if (Powers.Num() > 1)
 	{
-		VR_Gun->SetHiddenInGame(true, true);
-		Mesh1P->SetHiddenInGame(false, true);
+		PowerIndex++;
+		Powers[PowerIndex]->SetPowerActive(true); // First power
 	}
 }
 
@@ -119,14 +81,6 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &ACharacter::Jump);
 	PlayerInputComponent->BindAction("Jump", IE_Released, this, &ACharacter::StopJumping);
 
-	// Bind fire event
-	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::OnFire);
-
-	// Enable touchscreen input
-	EnableTouchscreenMovement(PlayerInputComponent);
-
-	PlayerInputComponent->BindAction("ResetVR", IE_Pressed, this, &AWQCharacter::OnResetVR);
-
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AWQCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWQCharacter::MoveRight);
@@ -138,40 +92,83 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAxis("TurnRate", this, &AWQCharacter::TurnAtRate);
 	PlayerInputComponent->BindAxis("LookUp", this, &APawn::AddControllerPitchInput);
 	PlayerInputComponent->BindAxis("LookUpRate", this, &AWQCharacter::LookUpAtRate);
+
+	// Bind power event
+	PlayerInputComponent->BindAction("Power", IE_Pressed, this, &AWQCharacter::PowerPressed);
+	PlayerInputComponent->BindAction("Power", IE_Released, this, &AWQCharacter::PowerReleased);
+
+	// Bind fire event
+	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::FirePressed);
+	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AWQCharacter::FireReleased);
+
+	//// Bind switching power events
+	//PlayerInputComponent->BindAction("SwitchPowerUp", IE_Pressed, this, &AWQCharacter::SwitchPowerUp);
+	//PlayerInputComponent->BindAction("SwitchPowerDown", IE_Pressed, this, &AWQCharacter::SwitchPowerDown);
+}
+
+/** Power pressed, called by the input */
+void AWQCharacter::PowerPressed()
+{
+	PowerPressedEvent.Broadcast();
+}
+
+/** Power released, called by the input */
+void AWQCharacter::PowerReleased()
+{
+	PowerReleasedEvent.Broadcast();
+}
+
+/** Fire pressed, called by the input */
+void AWQCharacter::FirePressed()
+{
+	FirePressedEvent.Broadcast();
+}
+
+/** Fire released, called by the input */
+void AWQCharacter::FireReleased()
+{
+	FireReleasedEvent.Broadcast();
+}
+
+/** Switching power with the mouse wheel up, called by the input */
+void AWQCharacter::SwitchPowerUp()
+{
+	Powers[PowerIndex]->SetPowerActive(false);
+	PowerIndex = (PowerIndex + 1) % Powers.Num();
+	Powers[PowerIndex]->SetPowerActive(true);
+}
+
+/** Switching power with the mouse wheel down, called by the input */
+void AWQCharacter::SwitchPowerDown()
+{
+	Powers[PowerIndex]->SetPowerActive(false);
+	PowerIndex = (PowerIndex - 1) % Powers.Num();
+	Powers[PowerIndex]->SetPowerActive(true);
 }
 
 void AWQCharacter::OnFire()
 {
 	// try and fire a projectile
-	if (ProjectileClass != NULL)
+	if (ProjectileClass != nullptr)
 	{
 		UWorld* const World = GetWorld();
-		if (World != NULL)
+		if (World != nullptr)
 		{
-			if (bUsingMotionControllers)
-			{
-				const FRotator SpawnRotation = VR_MuzzleLocation->GetComponentRotation();
-				const FVector SpawnLocation = VR_MuzzleLocation->GetComponentLocation();
-				World->SpawnActor<AWQProjectile>(ProjectileClass, SpawnLocation, SpawnRotation);
-			}
-			else
-			{
-				const FRotator SpawnRotation = GetControlRotation();
-				// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-				const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
+			const FRotator SpawnRotation = GetControlRotation();
+			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
+			const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
 
-				//Set Spawn Collision Handling Override
-				FActorSpawnParameters ActorSpawnParams;
-				ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
+			//Set Spawn Collision Handling Override
+			FActorSpawnParameters ActorSpawnParams;
+			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
 
-				// spawn the projectile at the muzzle
-				World->SpawnActor<AWQProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-			}
+			// spawn the projectile at the muzzle
+			World->SpawnActor<AWQProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
 		}
 	}
 
 	// try and play the sound if specified
-	if (FireSound != NULL)
+	if (FireSound != nullptr)
 	{
 		//UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
 		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
@@ -183,84 +180,16 @@ void AWQCharacter::OnFire()
 	}
 
 	// try and play a firing animation if specified
-	if (FireAnimation != NULL)
+	if (FireAnimation != nullptr)
 	{
 		// Get the animation object for the arms mesh
 		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != NULL)
+		if (AnimInstance != nullptr)
 		{
 			AnimInstance->Montage_Play(FireAnimation, 1.f);
 		}
 	}
 }
-
-void AWQCharacter::OnResetVR()
-{
-	UHeadMountedDisplayFunctionLibrary::ResetOrientationAndPosition();
-}
-
-void AWQCharacter::BeginTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	if (TouchItem.bIsPressed == true)
-	{
-		return;
-	}
-	if ((FingerIndex == TouchItem.FingerIndex) && (TouchItem.bMoved == false))
-	{
-		OnFire();
-	}
-	TouchItem.bIsPressed = true;
-	TouchItem.FingerIndex = FingerIndex;
-	TouchItem.Location = Location;
-	TouchItem.bMoved = false;
-}
-
-void AWQCharacter::EndTouch(const ETouchIndex::Type FingerIndex, const FVector Location)
-{
-	if (TouchItem.bIsPressed == false)
-	{
-		return;
-	}
-	TouchItem.bIsPressed = false;
-}
-
-//Commenting this section out to be consistent with FPS BP template.
-//This allows the user to turn without using the right virtual joystick
-
-//void AWQCharacter::TouchUpdate(const ETouchIndex::Type FingerIndex, const FVector Location)
-//{
-//	if ((TouchItem.bIsPressed == true) && (TouchItem.FingerIndex == FingerIndex))
-//	{
-//		if (TouchItem.bIsPressed)
-//		{
-//			if (GetWorld() != nullptr)
-//			{
-//				UGameViewportClient* ViewportClient = GetWorld()->GetGameViewport();
-//				if (ViewportClient != nullptr)
-//				{
-//					FVector MoveDelta = Location - TouchItem.Location;
-//					FVector2D ScreenSize;
-//					ViewportClient->GetViewportSize(ScreenSize);
-//					FVector2D ScaledDelta = FVector2D(MoveDelta.X, MoveDelta.Y) / ScreenSize;
-//					if (FMath::Abs(ScaledDelta.X) >= 4.0 / ScreenSize.X)
-//					{
-//						TouchItem.bMoved = true;
-//						float Value = ScaledDelta.X * BaseTurnRate;
-//						AddControllerYawInput(Value);
-//					}
-//					if (FMath::Abs(ScaledDelta.Y) >= 4.0 / ScreenSize.Y)
-//					{
-//						TouchItem.bMoved = true;
-//						float Value = ScaledDelta.Y * BaseTurnRate;
-//						AddControllerPitchInput(Value);
-//					}
-//					TouchItem.Location = Location;
-//				}
-//				TouchItem.Location = Location;
-//			}
-//		}
-//	}
-//}
 
 void AWQCharacter::MoveForward(float Value)
 {
@@ -268,6 +197,12 @@ void AWQCharacter::MoveForward(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorForwardVector(), Value);
+
+		// Try and play the headbob if specified
+		if (HeadbobShake != nullptr)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
+		}
 	}
 }
 
@@ -277,6 +212,12 @@ void AWQCharacter::MoveRight(float Value)
 	{
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
+
+		// Try and play the headbob if specified
+		if (HeadbobShake != nullptr)
+		{
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
+		}
 	}
 }
 
@@ -292,17 +233,59 @@ void AWQCharacter::LookUpAtRate(float Rate)
 	AddControllerPitchInput(Rate * BaseLookUpRate * GetWorld()->GetDeltaSeconds());
 }
 
-bool AWQCharacter::EnableTouchscreenMovement(class UInputComponent* PlayerInputComponent)
+/** Physic handles management */
+UPhysicsHandleComponent* AWQCharacter::GetUnusedPhysicHandle()
 {
-	if (FPlatformMisc::SupportsTouchInput() || GetDefault<UInputSettings>()->bUseMouseForTouch)
+	if (HandlesUsed >= PhysicHandles.Num())
 	{
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Pressed, this, &AWQCharacter::BeginTouch);
-		PlayerInputComponent->BindTouch(EInputEvent::IE_Released, this, &AWQCharacter::EndTouch);
-
-		//Commenting this out to be more consistent with FPS BP template.
-		//PlayerInputComponent->BindTouch(EInputEvent::IE_Repeat, this, &AWQCharacter::TouchUpdate);
-		return true;
+		AddPhysicHandle(PhysicHandles.Num(), true);
 	}
-	
-	return false;
+
+	UPhysicsHandleComponent* PhysicHandle = PhysicHandles[HandlesUsed];
+	PhysicHandle->SetActive(true);
+	HandlesUsed++;
+	return PhysicHandle;
+}
+
+/** Clear all physic handle */
+void AWQCharacter::ClearAllPhysicHandle()
+{
+	for (UPhysicsHandleComponent* PhysicHandle : PhysicHandles)
+	{
+		PhysicHandle->ReleaseComponent();
+		PhysicHandle->SetActive(false);
+	}
+	HandlesUsed = 0;
+}
+
+/** Add a physic handle */
+void AWQCharacter::AddPhysicHandle(int Index, bool bIsRuntime)
+{
+	UPhysicsHandleComponent* PhysicHandle;
+
+	if (!bIsRuntime)
+	{
+		PhysicHandle = CreateDefaultSubobject<UPhysicsHandleComponent>(FName(TEXT("PhysicHandle"), Index));
+	}
+	else
+	{
+		PhysicHandle = NewObject<UPhysicsHandleComponent>(this, FName(TEXT("RuntimePhysicHandle"), Index));
+		if (PhysicHandle)
+		{
+			this->AddInstanceComponent(PhysicHandle);
+			PhysicHandle->OnComponentCreated();
+			PhysicHandle->RegisterComponent();
+		}
+	}
+
+	if (PhysicHandle)
+	{
+		PhysicHandle->SetLinearDamping(0.01f);
+		PhysicHandle->SetLinearStiffness(1000000000.0f);
+		PhysicHandle->SetAngularDamping(0.01f);
+		PhysicHandle->SetAngularStiffness(1000000000.0f);
+		PhysicHandle->SetInterpolationSpeed(1000000000.0f);
+		PhysicHandle->SetActive(false);
+		PhysicHandles.Add(PhysicHandle);
+	}
 }
