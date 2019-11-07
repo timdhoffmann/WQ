@@ -2,6 +2,7 @@
 
 #pragma once
 class AAudioManager;
+class UEventManager;
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WQGameInstance.generated.h"
@@ -15,9 +16,11 @@ class WQ_API UWQGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	// Accessor for C++ & BP
-	UFUNCTION(BlueprintPure, Category = "Persistence")
+	// Accessors for C++ & BP
+	UFUNCTION(BlueprintPure, Category = Managers)
 	AAudioManager* AudioManager();
+	UFUNCTION(BlueprintPure, Category = Managers)
+	UEventManager* EventManager();
 
 protected:
 	// This is where we will clean up, as the game is shut down
@@ -33,4 +36,7 @@ protected:
 
 	UPROPERTY()
 	AAudioManager* AudioManagerInstance;
+
+	UPROPERTY()
+	UEventManager* EventManagerInstance;
 };

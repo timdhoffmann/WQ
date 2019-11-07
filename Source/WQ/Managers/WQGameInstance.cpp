@@ -2,6 +2,7 @@
 
 #include "WQGameInstance.h"
 #include "AudioManager.h"
+#include "EventManager.h"
 
  // Singleton-like accessor. I only use this as a workaround for PIE
  // The GameInstance lifecycle is different in PIE
@@ -12,6 +13,11 @@ AAudioManager* UWQGameInstance::AudioManager()
 	return IsValid(AudioManagerInstance) ? AudioManagerInstance : AudioManagerInstance = GetWorld()->SpawnActor<AAudioManager>(AudioManagerBP);
 }
 
+UEventManager* UWQGameInstance::EventManager()
+{
+	return IsValid(EventManagerInstance) ? EventManagerInstance : EventManagerInstance = NewObject<UEventManager>(this, FName("EventManager"));
+}
+
 // Cleanup. This acts as a quasi-destructor
 void UWQGameInstance::Shutdown()
 {
@@ -19,10 +25,10 @@ void UWQGameInstance::Shutdown()
 	// Omitting this, may cause errors (depending on the class).
 	Super::Shutdown();
 
-	// PIE may cause this to be invalid. During the game, it will always be valid
-	if (IsValid(AudioManagerInstance))
-	{
-		// If some behaviour is needed, input it here
-	}
+	//// PIE may cause this to be invalid. During the game, it will always be valid
+	//if (IsValid(AudioManagerInstance))
+	//{
+	//	// If some behaviour is needed, input it here
+	//}
 }
 

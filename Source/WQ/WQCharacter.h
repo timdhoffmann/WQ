@@ -5,7 +5,6 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "WQCharacter.generated.h"
-
 class UInputComponent;
 
 DECLARE_EVENT(AWQCharacter, FPowerPressed)
@@ -28,7 +27,7 @@ public:
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
 
 	/** Returns the Power Location scene component **/
-	class USceneComponent* GetPowerLocation() const { return FP_PowerLocation; }
+	class USceneComponent* GetFireSceneComponent() const { return FP_FireSceneComponent; }
 	
 	/** Returns the Physic Handles */
 	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
@@ -155,7 +154,7 @@ protected:
 
 	/** Location of the effects of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Powers)
-	USceneComponent* FP_PowerLocation;
+	USceneComponent* FP_FireSceneComponent;
 
 	/** Physic handles list */
 	UPROPERTY()

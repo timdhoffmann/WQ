@@ -5,6 +5,7 @@
 #include "Components/MeshComponent.h"
 #include "PropsMovement.h"
 #include "WQCharacter.h"
+#include "StaticUtils.h"
 
 // Sets default values
 AProps::AProps()
@@ -70,31 +71,35 @@ void AProps::SetGravitySimulation(bool bState)
 }
 
 /** Remove physical sims, move the prop towards a target */
-void AProps::FlyTowards(USceneComponent* NewParent, float Speed, float MagnetizationRadius)
+void AProps::FlyTowards(FVector Target, float Speed)
 {
 	//SetPhysicSimulation(false);
-
 	//GetRootComponent()->AttachToComponent(NewParent, FAttachmentTransformRules(EAttachmentRule::KeepWorld, false));
-
 	//PropsMovementComponent->MoveAutomaticallyTo(NewParent, Speed, MagnetizationRadius);
-
-	Mesh->AddForce((NewParent->GetComponentLocation() - GetRootComponent()->GetComponentLocation()).GetSafeNormal() * Speed, NAME_None, true);
-
+	SetGravitySimulation(false);
+	Mesh->AddForce(UStaticUtils::GetSafeNormal(Target - GetRootComponent()->GetComponentLocation()) * Speed, NAME_None, true);
 	Mesh->SetCollisionProfileName(TEXT("PropsHeld"));
 }
 
 /** Stop the flying */
 void AProps::FlyStop()
 {
-	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
-	SetPhysicSimulation(true);
-	PropsMovementComponent->StopAutomaticMovement();
+	//DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	//SetPhysicSimulation(true);
+	//PropsMovementComponent->StopAutomaticMovement();
 	Mesh->SetCollisionProfileName(TEXT("Props"));
+	SetGravitySimulation(true);
 }
 
 /** Propulse physically */
 void AProps::Propulse(FVector Direction, float Strength)
 {
 	Mesh->AddForce(Direction * Strength * Mesh->GetMassScale(), NAME_None, true);
+}
+
+/** Set a material */
+void AProps::SetMaterial(class UMaterial* Mat)
+{
+	Mesh->SetMaterial(0, Mat);
 }
 

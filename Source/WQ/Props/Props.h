@@ -31,13 +31,16 @@ public:
 	//void PrepareFly();
 
 	/** Remove physical sims, move the prop towards a target */
-	void FlyTowards(class USceneComponent* NewParent, float Speed, float MagnetizationRadius);
+	void FlyTowards(FVector Target, float Speed);
 
 	/** Stop the flying */
 	void FlyStop();
 
 	/** Propulse physically */
 	void Propulse(FVector Direction, float Strength);
+
+	/** Set a material */
+	void SetMaterial(class UMaterial* Mat);
 
 protected:
 	// Called when the game starts or when spawned

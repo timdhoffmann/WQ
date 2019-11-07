@@ -51,13 +51,9 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetForce;
 
-	// Radius at which the magnetized props will be pulled
+	// Radius coefficient at which the magnetized props will be pulled (0.0 = Center of object, 1.0 = position at which it was pulled)
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
-	float MagnetizationRadius;
-
-	// Speed of the spinning
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
-	FVector SpinningSpeed;
+	float MagnetizationRadiusCoeff;
 
 	// Propulsion force
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
@@ -74,4 +70,10 @@ protected:
 	/** Props list */
 	UPROPERTY()
 	TArray<class AProps*> MagnetizedProps;
+
+	/** Temporary materials for video */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	class UMaterial* Mat1;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UMaterial* Mat2;
 };

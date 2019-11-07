@@ -12,8 +12,8 @@
 #include "MotionControllerComponent.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
+#include "Managers/EventManager.h"
 #include "Math/UnrealMathUtility.h"
-#include "XRMotionControllerBase.h" // for FXRMotionControllerBase::RightHandSourceId
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Powers/Power.h"
 

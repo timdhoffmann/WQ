@@ -4,16 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "Powers/Power.h"
+#include "Managers/EventManager.h"
 #include "BouncingPower.generated.h"
 
 /** Enum for the states of the bouncing */
 UENUM(BlueprintType)
 enum class EBounceEnum : uint8
 {
-	BE_NoBall 	     UMETA(DisplayName = "NoBall"),
-	BE_BallReady 	 UMETA(DisplayName = "BallReady"),
-	BE_BallThrown 	 UMETA(DisplayName = "BallThrown"),
-	BE_BallCharging	 UMETA(DisplayName = "BallCharging")
+	BE_BallReady 	     UMETA(DisplayName = "BallReady"),
+	BE_BallThrown 	     UMETA(DisplayName = "BallThrown"),
+	BE_BallCharging	     UMETA(DisplayName = "BallCharging"),
+	BE_BallUncharging	 UMETA(DisplayName = "BallUncharging")
 };
 
 /**
@@ -46,6 +47,9 @@ protected:
 	// Update the bouncing
 	void UpdateBallCharge();
 
+	/** Get the ball back once it's thrown */
+	void GetBallBack();
+
 protected:
 	/** State of the bouncing power */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Bouncing)
@@ -58,4 +62,26 @@ protected:
 	/** Reference to the actual Bouncing Ball that we will spawn */
 	UPROPERTY()
 	ABouncingBall* BouncingBall;
+
+	/** Can we get the thrown ball back? */
+	bool bIsThrownBallReachable;
+
+	/** Bouncing ball creation time */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	float BallCreationTime;
+
+	/** Bouncing ball reduction time when the power is released while charging */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	float BallUnchargingTime;
+
+	/** Bouncing ball final scale */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	FVector FinalScale;
+
+	/** Bouncing ball projection force */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	float ProjectionForce;
+
+	// Sweep parameters
+	FCollisionQueryParams SweepParams;
 };

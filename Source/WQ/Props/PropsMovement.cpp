@@ -3,6 +3,7 @@
 
 #include "PropsMovement.h"
 #include "Props.h"
+#include "StaticUtils.h"
 
 // Sets default values
 UPropsMovement::UPropsMovement(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
@@ -40,7 +41,7 @@ void UPropsMovement::TickComponent(float DeltaTime, enum ELevelTick TickType, FA
 			return;
 		}
 
-		Velocity = (MoveTarget->GetComponentLocation() - UpdatedComponent->GetComponentLocation()).GetSafeNormal() * AutomaticMovementSpeed;
+		Velocity = UStaticUtils::GetSafeNormal(MoveTarget->GetComponentLocation() - UpdatedComponent->GetComponentLocation()) * AutomaticMovementSpeed;
 
 		//// Add gravity
 		//if (bIsGravityEnabled)
