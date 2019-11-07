@@ -3,12 +3,14 @@
 #include "MagnetPower.h"
 #include "WQCharacter.h"
 #include "Kismet/GameplayStatics.h"
-#include "Kismet/KismetSystemLibrary.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Props/Props.h"
 #include "Engine/EngineTypes.h"
 #include "DrawDebugHelpers.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Camera/CameraComponent.h"
+#include "ConstructorHelpers.h"
+#include "MagnetIndicator.h"
 
 // Sets default values for this component's properties
 UMagnetPower::UMagnetPower()
@@ -39,6 +41,20 @@ void UMagnetPower::BeginPlay()
 	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius);
 	SweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
+
+	// Spawn the indicator
+	if (MagnetIndicatorBP)
+	{
+		UWorld* const World = GetWorld();
+		if (World)
+		{
+			MagnetIndicator = World->SpawnActor<AMagnetIndicator>(MagnetIndicatorBP, Character->GetActorLocation(), Character->GetActorRotation());
+		}
+	}
+	else
+	{
+		UE_LOG(LogTemp, Error, TEXT("MagnetPower: MagnetIndicatorBP not set!"));
+	}
 }
 
 // Called every frame
@@ -59,6 +75,7 @@ void UMagnetPower::PowerPressed()
 	if (!bIsTargettingActivated)
 	{
 		bIsTargettingActivated = true;
+		MagnetIndicator->SetActorActive(true);
 	}
 }
 
@@ -82,6 +99,7 @@ void UMagnetPower::PowerReleased()
 			}
 		}
 		MagnetizedProps.Empty();
+		MagnetIndicator->SetActorActive(false);
 	}
 }
 
@@ -99,11 +117,18 @@ void UMagnetPower::UpdateMagnet()
 	FVector End = Start + MagnetRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();	
 	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel2, BiggerSphere, SweepParams);
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
+
+	// Update the indicator location and rotation
+	MagnetIndicator->SetActorLocation(FinalLocation);
+	FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FinalLocation, Character->GetActorLocation());
+	MagnetIndicator->SetActorRotation(LookAtRotator);
+
+	// Update the physic handles location
 	for (UPhysicsHandleComponent* PH : Character->GetPhysicHandles())
 	{
 		PH->SetTargetLocation(FinalLocation);
 	}
-	DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
+	//DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
 	TArray<FOverlapResult> OutProps;

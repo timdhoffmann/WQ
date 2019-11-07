@@ -59,6 +59,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float PropulsionForce;
 
+	// Blueprint class of the indicator
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	TSubclassOf<class AMagnetIndicator> MagnetIndicatorBP;
+
+	/** Reference to the indicator that will be spawned */
+	UPROPERTY()
+	AMagnetIndicator* MagnetIndicator;
+
 	// Sweep parameters
 	FCollisionShape Sphere;
 	FCollisionShape BiggerSphere;
