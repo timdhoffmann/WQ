@@ -6,7 +6,7 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Props/Props.h"
 #include "Engine/EngineTypes.h"
-#include "DrawDebugHelpers.h"
+//#include "DrawDebugHelpers.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "ConstructorHelpers.h"
@@ -28,6 +28,13 @@ UMagnetPower::UMagnetPower()
 	PropulsionForce = 500000.0f;
 	MagnetizationRadiusCoeff = 0.8f;
 	Identifier = 0;
+
+	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
+	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
+	if (MagnetIndicatorClassFinder.Object)
+	{
+		MagnetIndicatorBP = MagnetIndicatorClassFinder.Object;
+	}
 }
 
 

@@ -5,7 +5,8 @@
 #include "WQCharacter.h"
 #include "BouncingBall.h"
 #include "Kismet/GameplayStatics.h"
-#include "DrawDebugHelpers.h"
+//#include "DrawDebugHelpers.h"
+#include "ConstructorHelpers.h"
 
 // Sets default values for this component's properties
 UBouncingPower::UBouncingPower()
@@ -23,6 +24,13 @@ UBouncingPower::UBouncingPower()
 	TelekinesisRadius = 100.0f;
 	TelekinesisRange = 10000.0f;
 	TelekinesisForce = 50.0f;
+
+	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
+	static ConstructorHelpers::FObjectFinder<UClass> BouncingBallClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_BouncingBall.BP_BouncingBall_C'"));
+	if (BouncingBallClassFinder.Object)
+	{
+		BouncingBallBP = BouncingBallClassFinder.Object;
+	}
 }
 
 // Called when the game starts
@@ -146,14 +154,14 @@ bool UBouncingPower::UpdateBallTargetting()
 	{
 		FVector FinalLocation = Hit.Location;
 
-		DrawDebugSphere(World, FinalLocation, TelekinesisRadius, 32, FColor::White);
+		//DrawDebugSphere(World, FinalLocation, TelekinesisRadius, 32, FColor::White);
 
 		// Raycast to the environment to check that there is nothing blocking
 		Hit.Reset(1.f, false);
-		World->LineTraceSingleByChannel(Hit, Start, End, ECollisionChannel::ECC_GameTraceChannel2, SweepParams);
+		World->LineTraceSingleByChannel(Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams);
 		FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
 
-		if (FVector::DistSquared(Character->GetActorLocation(), FinalScale) < FVector::DistSquared(Character->GetActorLocation(), BlockingLocation))
+		if (FVector::DistSquared(Character->GetActorLocation(), FinalLocation) <= FVector::DistSquared(Character->GetActorLocation(), BlockingLocation))
 		{
 			// TODO: Change HUD + Ball Highlight?
 			return true;
