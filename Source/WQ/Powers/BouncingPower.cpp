@@ -24,6 +24,7 @@ UBouncingPower::UBouncingPower()
 	TelekinesisRadius = 100.0f;
 	TelekinesisRange = 10000.0f;
 	TelekinesisForce = 50.0f;
+	BounceNumber = 5;
 
 	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> BouncingBallClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_BouncingBall.BP_BouncingBall_C'"));

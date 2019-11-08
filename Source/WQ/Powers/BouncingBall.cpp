@@ -60,6 +60,7 @@ void ABouncingBall::Tick(float DeltaTime)
 			bIsBallTelekinesisd = false;
 			SetCollisionProfile(TEXT("BallHeld"));
 			SetGravitySimulation(true);
+			SetPhysicSimulation(false);
 
 			// Callback
 			CurrentCallback.ExecuteIfBound();
@@ -161,6 +162,7 @@ void ABouncingBall::Propulse(FVector Direction, float Strength)
 		{
 			SetCollisionProfile(TEXT("Ball"));
 			SetPhysicSimulation(true);
+			//SetGravitySimulation(false);
 			Mesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * Mesh->GetMassScale(), NAME_None, true);
 		}
 	}

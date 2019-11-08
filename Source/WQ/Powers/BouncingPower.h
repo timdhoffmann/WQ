@@ -93,6 +93,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float TelekinesisForce;
 
+	/** Telekinesis force for getting the ball back */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	int BounceNumber;
+
 	// Sweep parameters
 	FCollisionShape Sphere;
 	FCollisionQueryParams SweepParams;
