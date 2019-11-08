@@ -14,7 +14,8 @@ enum class EBounceEnum : uint8
 	BE_BallReady 	     UMETA(DisplayName = "BallReady"),
 	BE_BallThrown 	     UMETA(DisplayName = "BallThrown"),
 	BE_BallCharging	     UMETA(DisplayName = "BallCharging"),
-	BE_BallUncharging	 UMETA(DisplayName = "BallUncharging")
+	BE_BallUncharging	 UMETA(DisplayName = "BallUncharging"),
+	BE_BallComingBack    UMETA(DisplayName = "BallComingBack"),
 };
 
 /**
@@ -44,11 +45,12 @@ protected:
 	// Behaviour when the power is deactivated
 	virtual void PowerReleased() override;
 
-	// Update the bouncing
-	void UpdateBallCharge();
+	// Update the ball targetting when the ball is thrown
+	bool UpdateBallTargetting();
 
-	/** Get the ball back once it's thrown */
-	void GetBallBack();
+	// Event called on telekinesis finished
+	UFUNCTION()
+	void OnTelekinesisFinished();
 
 protected:
 	/** State of the bouncing power */
@@ -62,9 +64,6 @@ protected:
 	/** Reference to the actual Bouncing Ball that we will spawn */
 	UPROPERTY()
 	ABouncingBall* BouncingBall;
-
-	/** Can we get the thrown ball back? */
-	bool bIsThrownBallReachable;
 
 	/** Bouncing ball creation time */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
@@ -82,6 +81,24 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float ProjectionForce;
 
+	/** Telekinesis radius for getting the ball back */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	float TelekinesisRadius;
+
+	/** Telekinesis radius for getting the ball back */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	float TelekinesisRange;
+
+	/** Telekinesis force for getting the ball back */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	float TelekinesisForce;
+
+	/** Telekinesis force for getting the ball back */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	int BounceNumber;
+
 	// Sweep parameters
+	FCollisionShape Sphere;
 	FCollisionQueryParams SweepParams;
+	FCollisionQueryParams TelekinesisSweepParams;
 };
