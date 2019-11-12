@@ -83,6 +83,7 @@ protected:
 	/** Fire binding methods, called by the input */
 	UFUNCTION()
 	void FirePressed();
+
 	UFUNCTION()
 	void FireReleased();
 
@@ -91,6 +92,9 @@ protected:
 	void SwitchPowerUp();
 	UFUNCTION()
 	void SwitchPowerDown();
+
+    UFUNCTION()
+    void PauseTriggered();
 
 	/** Add a physic handle */
 	void AddPhysicHandle(int Index, bool bIsRuntime = false);
