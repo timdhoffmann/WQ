@@ -10,8 +10,14 @@
 			"LoadingPhase": "Default",
 			"AdditionalDependencies": [
 				"Engine",
+<<<<<<< HEAD
 				"AIModule",
 				"CoreUObject"
+=======
+				"UMG",
+				"CoreUObject",
+				"AIModule"
+>>>>>>> ui_tests
 			]
 		}
 	],
