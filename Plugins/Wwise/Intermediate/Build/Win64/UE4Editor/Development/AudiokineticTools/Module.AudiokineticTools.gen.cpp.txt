@@ -1,0 +1,52 @@
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Development\AudiokineticTools\Definitions.AudiokineticTools.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/ActorFactoryAkAmbientSound.gen.cpp
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\CoreUObject\Public\UObject/GeneratedCppIncludes.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\CoreUObject\Public\UObject/MetaData.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/ActorFactoryAkAmbientSound.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Editor\UnrealEd\Classes\ActorFactories/ActorFactory.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Intermediate\Build\Win64\UE4Editor\Inc\UnrealEd\ActorFactory.generated.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\ActorFactoryAkAmbientSound.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/AkAcousticTextureFactory.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/AkAcousticTextureFactory.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\AkAcousticTextureFactory.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/AkAudioBankFactory.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/AkAudioBankFactory.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\AkAudioBankFactory.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/AkAudioEventFactory.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/AkAudioEventFactory.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\AkAudioEventFactory.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/AkAuxBusFactory.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/AkAuxBusFactory.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\AkAuxBusFactory.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/AkJsonFactory.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/AkJsonFactory.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\AkJsonFactory.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/AudiokineticTools.init.gen.cpp
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/GenerateSoundBanksCommandlet.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/GenerateSoundBanksCommandlet.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Engine\Classes\Commandlets/Commandlet.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\Commandlet.generated.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\GenerateSoundBanksCommandlet.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/InterpTrackAkAudioEventHelper.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/InterpTrackAkAudioEventHelper.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AkAudio\Classes\AkAudioEvent.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Engine\Classes\Engine/GameEngine.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Slate\Public\Widgets/SViewport.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\SlateCore\Public\Input/HittestGrid.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime/MovieSceneCapture/Public/MovieSceneCaptureHandle.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\GameEngine.generated.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AkAudio\AkAudioEvent.generated.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Engine\Classes\Matinee/InterpTrack.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Engine\Public\Interpolation.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\InterpTrack.generated.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Editor\Matinee\Public\IMatinee.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Editor\Matinee\Public\MatineeGroupData.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Runtime\Engine\Classes\Matinee/InterpGroup.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Engine\InterpGroup.generated.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Editor\Matinee\Public\MatineeTrackData.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Source\Editor\Matinee\Classes\InterpTrackHelper.h
+C:\Program Files\Epic Games\UE_4.23\Engine\Intermediate\Build\Win64\UE4Editor\Inc\Matinee\InterpTrackHelper.generated.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\InterpTrackAkAudioEventHelper.generated.h
+C:/Users/ELE59cf469c9ad5e/Desktop/WQ/Plugins/Wwise/Intermediate/Build/Win64/UE4Editor/Inc/AudiokineticTools/InterpTrackAkAudioRTPCHelper.gen.cpp
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Source\AudiokineticTools/Classes/InterpTrackAkAudioRTPCHelper.h
+C:\Users\ELE59cf469c9ad5e\Desktop\WQ\Plugins\Wwise\Intermediate\Build\Win64\UE4Editor\Inc\AudiokineticTools\InterpTrackAkAudioRTPCHelper.generated.h
