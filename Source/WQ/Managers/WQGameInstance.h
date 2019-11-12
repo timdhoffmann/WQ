@@ -48,4 +48,7 @@ protected:
 
     UPROPERTY()
     UPauseManager* PauseManagerInstance;
+
+	UPROPERTY()
+    UEventManager* EventManagerInstance;
 };
