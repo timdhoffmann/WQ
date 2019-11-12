@@ -5,8 +5,6 @@
 
 // Sets default values
 AWQAICharacter::AWQAICharacter()
-    : HealthPoint( 0.0f )
-    , InstanceState( EAIStateEnum::AISE_Unknown )
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
@@ -17,8 +15,8 @@ void AWQAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
 
-    HealthPoint     = InitialHealthPoint;
-    InstanceState   = InitialState;
+    HealthPoints     = InitialHealthPoints;
+    //InstanceState   = InitialState;
 }
 
 // Called every frame
@@ -26,15 +24,15 @@ void AWQAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-    if ( HealthPoint <= 0.0f ) {
-        InstanceState = EAIStateEnum::AISE_Dead;
-    }
+    //if ( HealthPoint <= 0.0f ) {
+    //    InstanceState = EAIStateEnum::AISE_Dead;
+    //}
 
-    if ( InstanceState == EAIStateEnum::AISE_Dead ) {
-        // TODO This is kinda caca atm
-        // Still need to add animation/sfx/vfx to make this prettier
-        Destroy();
-    }
+    //if ( InstanceState == EAIStateEnum::AISE_Dead ) {
+    //    // TODO This is kinda caca atm
+    //    // Still need to add animation/sfx/vfx to make this prettier
+    //    Destroy();
+    //}
 }
 
 // Called to bind functionality to input

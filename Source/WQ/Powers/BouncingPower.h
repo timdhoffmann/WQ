@@ -93,9 +93,12 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float TelekinesisForce;
 
-	/** Telekinesis force for getting the ball back */
+	/** Time limit for when the ball is thrown before it is destroyed */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
-	int BounceNumber;
+	float ProjectionTimeLimit;
+
+	/** Status of the time limit */
+	float CurrentProjectionTime;
 
 	// Sweep parameters
 	FCollisionShape Sphere;
