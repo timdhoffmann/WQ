@@ -114,10 +114,11 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
 
     if ( NextActorToReach != nullptr ) {
         character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion() );
-        character->TransitionState( EAIStateEnum::AISE_InChase );
+        //character->TransitionState( EAIStateEnum::AISE_InChase );
 
         BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
-    } else {
-        character->TransitionState( EAIStateEnum::AISE_Alive );
     }
+	//else {
+ //       character->TransitionState( EAIStateEnum::AISE_Alive );
+ //   }
 }

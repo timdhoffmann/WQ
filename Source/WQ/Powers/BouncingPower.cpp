@@ -24,7 +24,7 @@ UBouncingPower::UBouncingPower()
 	TelekinesisRadius = 100.0f;
 	TelekinesisRange = 10000.0f;
 	TelekinesisForce = 50.0f;
-	BounceNumber = 5;
+	ProjectionTimeLimit = 3.0f;
 
 	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> BouncingBallClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_BouncingBall.BP_BouncingBall_C'"));
@@ -64,6 +64,9 @@ void UBouncingPower::BeginPlay()
 	TelekinesisSweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 	if (BouncingBall)
 		SweepParams.AddIgnoredActor(BouncingBall); // Ignore the ball only for the sphere
+
+	// Initialize the CurrentProjectionTime
+	CurrentProjectionTime = 0.0f;
 }
 
 // Behaviour when the power is activated
@@ -90,6 +93,20 @@ void UBouncingPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 
 	if (BounceState == EBounceEnum::BE_BallThrown)
 	{
+		// Time limit logic
+		CurrentProjectionTime += DeltaTime;
+		if (CurrentProjectionTime >= ProjectionTimeLimit)
+		{
+			BounceState = EBounceEnum::BE_BallUncharging;
+
+			// Reset the ball
+			BouncingBall->ResetBall();
+			BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+
+			return;
+		}
+
+		// Logic for getting the ball back
 		UpdateBallTargetting();
 	}
 }
@@ -136,7 +153,10 @@ void UBouncingPower::PowerReleased()
 			FVector Target = Hit.IsValidBlockingHit() ? Hit.ImpactPoint : Hit.TraceEnd;
 			FVector Direction = Target - BouncingBall->GetRootComponent()->GetComponentLocation();
 			BouncingBall->Propulse(Direction, ProjectionForce);
+
+			// Change the state parameters
 			BounceState = EBounceEnum::BE_BallThrown;
+			CurrentProjectionTime = 0.0f;
 		}
 	}
 }

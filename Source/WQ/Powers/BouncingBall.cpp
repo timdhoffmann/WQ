@@ -23,12 +23,20 @@ ABouncingBall::ABouncingBall()
 void ABouncingBall::BeginPlay()
 {
 	Super::BeginPlay();
+
+	// Get the ball mesh
+	TArray<UStaticMeshComponent*> Temp;
+	GetComponents<UStaticMeshComponent>(Temp);
+	if (Temp.Num() > 0)
+		BallMesh = Temp[0];
+
+	//// Add the collision notification and disable the notifications for now
+	//BallMesh->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
+	//BallMesh->SetNotifyRigidBodyCollision(false);
 	
 	// Activate all elements with zero scale, and disable physics
 	SetBallActive(true);
-	GetRootComponent()->SetWorldScale3D(FVector::ZeroVector);
-	SetPhysicSimulation(false);
-	SetCollisionProfile(TEXT("BallHeld"));
+	ResetBall();
 }
 
 // Called every frame
@@ -58,9 +66,9 @@ void ABouncingBall::Tick(float DeltaTime)
 		{
 			// Change needed parameters
 			bIsBallTelekinesisd = false;
-			SetCollisionProfile(TEXT("BallHeld"));
-			SetGravitySimulation(true);
 			SetPhysicSimulation(false);
+			SetGravitySimulation(true);
+			SetCollisionProfile(TEXT("BallHeld"));
 
 			// Callback
 			CurrentCallback.ExecuteIfBound();
@@ -104,25 +112,22 @@ void ABouncingBall::ChangeScale(FVector InitialScale, FVector FinalScale, float 
 /** Activate/deactivate the ball */
 void ABouncingBall::SetBallActive(bool bState)
 {
-	for (UStaticMeshComponent* Mesh : BallMeshes)
+	if (BallMesh != nullptr)
 	{
-		Mesh->SetActive(bState);
-		Mesh->SetHiddenInGame(!bState);
+		BallMesh->SetActive(bState);
+		BallMesh->SetHiddenInGame(!bState);
 	}
 }
 
 /** Changes the simulation physics status */
 void ABouncingBall::SetPhysicSimulation(bool bState)
 {
-	for (UStaticMeshComponent* Mesh : BallMeshes)
+	if (BallMesh != nullptr)
 	{
-		if (Mesh != nullptr)
+		BallMesh->SetSimulatePhysics(bState);
+		if (bState)
 		{
-			Mesh->SetSimulatePhysics(bState);
-			if (bState)
-			{
-				Mesh->WakeAllRigidBodies();
-			}
+			BallMesh->WakeAllRigidBodies();
 		}
 	}
 }
@@ -130,24 +135,18 @@ void ABouncingBall::SetPhysicSimulation(bool bState)
 /** Changes the gravity physics status */
 void ABouncingBall::SetGravitySimulation(bool bState)
 {
-	for (UStaticMeshComponent* Mesh : BallMeshes)
+	if (BallMesh != nullptr)
 	{
-		if (Mesh != nullptr)
-		{
-			Mesh->SetEnableGravity(bState);
-		}
+		BallMesh->SetEnableGravity(bState);
 	}
 }
 
 /** Changes the collision profile */
 void ABouncingBall::SetCollisionProfile(FName CollisionProfileName)
 {
-	for (UStaticMeshComponent* Mesh : BallMeshes)
+	if (BallMesh != nullptr)
 	{
-		if (Mesh != nullptr)
-		{
-			Mesh->SetCollisionProfileName(CollisionProfileName);
-		}
+		BallMesh->SetCollisionProfileName(CollisionProfileName);
 	}
 }
 
@@ -156,21 +155,25 @@ void ABouncingBall::Propulse(FVector Direction, float Strength)
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-	for (UStaticMeshComponent* Mesh : BallMeshes)
+	if (BallMesh != nullptr)
 	{
-		if (Mesh != nullptr)
-		{
-			SetCollisionProfile(TEXT("Ball"));
-			SetPhysicSimulation(true);
-			//SetGravitySimulation(false);
-			Mesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * Mesh->GetMassScale(), NAME_None, true);
-		}
+		// Physics changes
+		SetCollisionProfile(TEXT("Ball"));
+		SetPhysicSimulation(true);
+		//SetGravitySimulation(false);
+		BallMesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * BallMesh->GetMassScale(), NAME_None, true);
+
+		//// Activate the OnComponentHit call
+		//BallMesh->SetNotifyRigidBodyCollision(true);
 	}
 }
 
 /** Get the ball back with telekinesis */
 void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength, FSimpleCallback Callback)
 {
+	// Deactivate the OnComponentHit call
+	BallMesh->SetNotifyRigidBodyCollision(false);
+
 	// Deactivate Physics & Gravity
 	SetPhysicSimulation(false);
 	SetGravitySimulation(false);
@@ -187,4 +190,19 @@ void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength
 	// Set the correct collision profile
 	SetCollisionProfile(TEXT("BallTelekinesis"));
 }
+
+/** Reset the ball position and scale */
+void ABouncingBall::ResetBall()
+{
+	GetRootComponent()->SetWorldScale3D(FVector::ZeroVector);
+	SetPhysicSimulation(false);
+	SetGravitySimulation(true);
+	SetCollisionProfile(TEXT("BallHeld"));
+}
+
+///** Allows us to remove durability when the ball hits the environment */
+//void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+//{
+//	if (OtherActor != this && OtherActor->GetRootComponent()->GetCollisionObjectType() == )
+//}
 

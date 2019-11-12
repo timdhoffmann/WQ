@@ -3,6 +3,8 @@
 #pragma once
 
 class USceneComponent;
+class UPrimitiveComponent;
+class UStaticMeshComponent;
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Managers/EventManager.h"
@@ -32,6 +34,9 @@ public:
 	/** Get the ball back with telekinesis */
 	void GetBallBack(USceneComponent* TargetComponent, float Strength, FSimpleCallback Callback);
 
+	/** Reset the ball position and scale */
+	void ResetBall();
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -45,10 +50,15 @@ protected:
 	/** Changes the collision profile */
 	void SetCollisionProfile(FName CollisionProfileName);
 
+	///** Allows us to remove durability when the ball hits the environment */
+	//UFUNCTION()
+	//void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 protected:
 	// Array of all the meshes used for the ball
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
-	TArray<UStaticMeshComponent*> BallMeshes;
+	//TArray<UStaticMeshComponent*> BallMeshes;
+	UStaticMeshComponent* BallMesh;
 
 	/** Is the ball resizing? */
 	bool bIsBallResizing;
