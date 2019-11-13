@@ -5,7 +5,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "StaticUtils.h"
 
-// Sets default values
+/** Sets default values */
 ABouncingBall::ABouncingBall()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -19,7 +19,7 @@ ABouncingBall::ABouncingBall()
 	CurrentScalingSpeed = 0.0f;
 }
 
-// Called when the game starts or when spawned
+/** Called when the game starts or when spawned */
 void ABouncingBall::BeginPlay()
 {
 	Super::BeginPlay();
@@ -39,7 +39,7 @@ void ABouncingBall::BeginPlay()
 	ResetBall();
 }
 
-// Called every frame
+/** Called every frame */
 void ABouncingBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -92,6 +92,7 @@ void ABouncingBall::Tick(float DeltaTime)
 	}
 }
 
+/** Changes the scale of the ball elements in a given time */
 void ABouncingBall::ChangeScale(FVector InitialScale, FVector FinalScale, float Duration, FSimpleCallback Callback)
 {
 	this->InitialScale = InitialScale;

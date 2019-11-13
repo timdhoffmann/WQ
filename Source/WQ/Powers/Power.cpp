@@ -4,7 +4,7 @@
 #include "Power.h"
 #include "WQCharacter.h"
 
-// Sets default values for this component's properties
+/** Sets default values for this component's properties */
 UPower::UPower()
 {
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
@@ -15,7 +15,7 @@ UPower::UPower()
 }
 
 
-// Called when the game starts
+/** Called when the game starts */
 void UPower::BeginPlay()
 {
 	Super::BeginPlay();
@@ -28,13 +28,13 @@ void UPower::BeginPlay()
 }
 
 
-// Called every frame
+/** Called every frame */
 void UPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 }
 
-// Behaviour when the power is activated
+/** Behaviour when the power is activated */
 void UPower::SetPowerActive(bool bState)
 {
 	if (bState)
@@ -51,13 +51,13 @@ void UPower::SetPowerActive(bool bState)
 	}
 }
 
-// Behaviour when the power is activated
+/** Behaviour when the power is activated */
 void UPower::PowerPressed()
 {
 
 }
 
-// Behaviour when the power is deactivated
+/** Behaviour when the power is deactivated */
 void UPower::PowerReleased()
 {
 

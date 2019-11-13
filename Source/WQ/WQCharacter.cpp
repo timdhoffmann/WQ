@@ -157,6 +157,7 @@ void AWQCharacter::SwitchPowerDown()
 	Powers[PowerIndex]->SetPowerActive(true);
 }
 
+/** Pause behaviour */
 void AWQCharacter::PauseTriggered()
 {
     UE_LOG( LogTemp, Log, TEXT( "Pause has been triggered" ) )

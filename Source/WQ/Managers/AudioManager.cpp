@@ -3,7 +3,7 @@
 
 #include "AudioManager.h"
 
-// Sets default values
+/** Sets default values */
 AAudioManager::AAudioManager()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -11,14 +11,14 @@ AAudioManager::AAudioManager()
 
 }
 
-// Called when the game starts or when spawned
+/** Called when the game starts or when spawned */
 void AAudioManager::BeginPlay()
 {
 	Super::BeginPlay();
 	
 }
 
-// Called every frame
+/** Called every frame */
 void AAudioManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

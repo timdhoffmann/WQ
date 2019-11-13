@@ -6,20 +6,22 @@
 #include "EventManager.h"
 #include "PauseManager.h"
 
+/** Accessor for C++ & BP */
  // Singleton-like accessor. I only use this as a workaround for PIE
  // The GameInstance lifecycle is different in PIE
  // In proper builds, this wouldn't be necessary
 AAudioManager* UWQGameInstance::AudioManager()
-{
-	//return IsValid(AudioManagerInstance) ? AudioManagerInstance : AudioManagerInstance = NewObject<AAudioManager>(this, FName("AudioManager"));
+{;
 	return IsValid(AudioManagerInstance) ? AudioManagerInstance : AudioManagerInstance = GetWorld()->SpawnActor<AAudioManager>(AudioManagerBP);
 }
 
+/** Accessor for C++ & BP */
 UEventManager* UWQGameInstance::EventManager()
 {
 	return IsValid(EventManagerInstance) ? EventManagerInstance : EventManagerInstance = NewObject<UEventManager>(this, FName("EventManager"));
 }
 
+/** Accessor for C++ & BP */
 UPauseManager* UWQGameInstance::PauseManager()
 {
     if ( !IsValid( PauseManagerInstance ) ) {
@@ -29,7 +31,7 @@ UPauseManager* UWQGameInstance::PauseManager()
     return PauseManagerInstance;
 }
 
-// Cleanup. This acts as a quasi-destructor
+/** This is where we will clean up, as the game is shut down */
 void UWQGameInstance::Shutdown()
 {
 	// Important, if you overwrite functionality in UE4.

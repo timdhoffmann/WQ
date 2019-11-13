@@ -3,14 +3,14 @@
 
 #include "WQAICharacter.h"
 
-// Sets default values
+/** Sets default values */
 AWQAICharacter::AWQAICharacter()
 {
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 }
 
-// Called when the game starts or when spawned
+/** Called when the game starts or when spawned */
 void AWQAICharacter::BeginPlay()
 {
 	Super::BeginPlay();
@@ -19,7 +19,7 @@ void AWQAICharacter::BeginPlay()
     //InstanceState   = InitialState;
 }
 
-// Called every frame
+/** Called every frame */
 void AWQAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
@@ -35,7 +35,7 @@ void AWQAICharacter::Tick(float DeltaTime)
     //}
 }
 
-// Called to bind functionality to input
+/** Called to bind functionality to input */
 void AWQAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

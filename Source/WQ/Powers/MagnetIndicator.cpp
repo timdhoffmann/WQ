@@ -3,7 +3,7 @@
 
 #include "MagnetIndicator.h"
 
-// Sets default values
+/** Sets default values */
 AMagnetIndicator::AMagnetIndicator()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -11,7 +11,7 @@ AMagnetIndicator::AMagnetIndicator()
 
 }
 
-// Called when the game starts or when spawned
+/** Called when the game starts or when spawned */
 void AMagnetIndicator::BeginPlay()
 {
 	Super::BeginPlay();
@@ -23,7 +23,7 @@ void AMagnetIndicator::BeginPlay()
 	SetActorActive(false);
 }
 
-// Called every frame
+/** Called every frame */
 void AMagnetIndicator::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);

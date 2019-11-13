@@ -13,5 +13,6 @@ class WQ_API UStaticUtils : public UObject
 {
 	GENERATED_UCLASS_BODY()
 
+	/** Get a correct safe normal, even in the UE4 editor */
 	static FVector GetSafeNormal(FVector Vec, float Tolerance = 1.e-8f);
 };

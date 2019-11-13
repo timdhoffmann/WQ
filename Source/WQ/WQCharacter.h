@@ -38,11 +38,11 @@ public:
 	/** Clear all physic handle */
 	void ClearAllPhysicHandle();
 
-	// Accessor to the power events
+	/** Accessor to the power events */
 	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
 	FPowerReleased& OnPowerReleased() { return PowerReleasedEvent; }
 
-	// Accessor to the fire events
+	/** Accessor to the fire events */
 	FFirePressed& OnFirePressed() { return FirePressedEvent; }
 	FFireReleased& OnFireReleased() { return FireReleasedEvent; }
 
@@ -93,6 +93,7 @@ protected:
 	UFUNCTION()
 	void SwitchPowerDown();
 
+	/** Pause behaviour */
     UFUNCTION()
     void PauseTriggered();
 
@@ -144,16 +145,16 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
 	TSubclassOf<class UCameraShake> HeadbobShake;
 
-	// Called when the player presses the power input
+	/** Called when the player presses the power input */
 	FPowerPressed PowerPressedEvent;
 
-	// Called when the player releases the power input
+	/** Called when the player releases the power input */
 	FPowerReleased PowerReleasedEvent;
 
-	// Called when the player presses the fire input
+	/** Called when the player presses the fire input */
 	FFirePressed FirePressedEvent;
 
-	// Called when the player releases the fire input
+	/** Called when the player releases the fire input */
 	FFireReleased FireReleasedEvent;
 
 	/** Location of the effects of the power */

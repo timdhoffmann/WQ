@@ -7,6 +7,7 @@
 
 #include "Engine/Classes/Kismet/GameplayStatics.h"
 
+/** Constructor */
 UPauseManager::UPauseManager()
     : bIsPaused( false )
     , InventoryWidget( nullptr )
@@ -19,6 +20,7 @@ UPauseManager::UPauseManager()
     }
 }
 
+/** Destructor */
 UPauseManager::~UPauseManager()
 {
     if ( InventoryWidget != nullptr ) {
@@ -30,6 +32,7 @@ UPauseManager::~UPauseManager()
     bIsPaused = false;
 }
 
+/** Used to show or hide the pause menu UI */
 void UPauseManager::ShowHidePauseMenu()
 {
     APlayerController* PlayerController = GetWorld()->GetFirstPlayerController();

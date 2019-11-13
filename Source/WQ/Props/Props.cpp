@@ -7,7 +7,7 @@
 #include "WQCharacter.h"
 #include "StaticUtils.h"
 
-// Sets default values
+/** Sets default values */
 AProps::AProps()
 {
  	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
@@ -20,7 +20,7 @@ AProps::AProps()
 	bIsFlying = false;
 }
 
-// Called when the game starts or when spawned
+/** Called when the game starts or when spawned */
 void AProps::BeginPlay()
 {
 	Super::BeginPlay();
@@ -28,13 +28,13 @@ void AProps::BeginPlay()
 	SetPhysicSimulation(true);
 }
 
-// Called every frame
+/** Called every frame */
 void AProps::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 }
 
-// Called to bind functionality to input
+/** Called to bind functionality to input */
 void AProps::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);

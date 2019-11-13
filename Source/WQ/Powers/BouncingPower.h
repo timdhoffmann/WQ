@@ -19,7 +19,7 @@ enum class EBounceEnum : uint8
 };
 
 /**
- * Boucing power implementation
+ * Bouncing power implementation
  */
 UCLASS(ClassGroup = (Powers), meta = (BlueprintSpawnableComponent))
 class WQ_API UBouncingPower : public UPower
@@ -27,28 +27,29 @@ class WQ_API UBouncingPower : public UPower
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this component's properties
+	/** Sets default values for this component's properties */
 	UBouncingPower();
 
-	// Called every frame
+	/** Called every frame */
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	// Behaviour when the power is activated
+	/** Behaviour when the power is activated */
 	virtual void SetPowerActive(bool bState) override;
 
 protected:
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
-	// Behaviour when the power is activated
+	/** Behaviour when the power is activated */
 	virtual void PowerPressed() override;
 
-	// Behaviour when the power is deactivated
+	/** Behaviour when the power is deactivated */
 	virtual void PowerReleased() override;
 
-	// Update the ball targetting when the ball is thrown
+	/** Update the ball targetting when the ball is thrown */
 	bool UpdateBallTargetting();
 
-	// Event called on telekinesis finished
+	/** Function called on telekinesis finished */
 	UFUNCTION()
 	void OnTelekinesisFinished();
 
@@ -85,7 +86,7 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float TelekinesisRadius;
 
-	/** Telekinesis radius for getting the ball back */
+	/** Telekinesis range for getting the ball back */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float TelekinesisRange;
 
@@ -100,7 +101,7 @@ protected:
 	/** Status of the time limit */
 	float CurrentProjectionTime;
 
-	// Sweep parameters
+	/** Sweep parameters  */
 	FCollisionShape Sphere;
 	FCollisionQueryParams SweepParams;
 	FCollisionQueryParams TelekinesisSweepParams;

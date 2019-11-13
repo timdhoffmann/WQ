@@ -9,7 +9,7 @@ class UUserWidget;
 #include "PauseManager.generated.h"
 
 /**
- * 
+ * Manages the pause state and the linked UI
  */
 UCLASS(Blueprintable)
 class WQ_API UPauseManager : public UObject
@@ -20,18 +20,20 @@ public:
             UPauseManager();
             ~UPauseManager();
 
-    UFUNCTION(BlueprintCallable)
+	/** Used to show or hide the pause menu UI */
+    UFUNCTION(BlueprintCallable, Category = Pause)
     void    ShowHidePauseMenu();
     
-public:
-    // The class that will be used for the players Inventory UI
-    UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "Player, HUD and UI" )
+protected:
+    /** The class that will be used for the players Inventory UI */
+    UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = Pause )
     TSubclassOf<class UUserWidget> InventoryUIClass;
 
-    // The instance of the players Inventory UI Widget
-    UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = "Player, HUD and UI" )
+    /** The instance of the players Inventory UI Widget */
+    UPROPERTY( EditDefaultsOnly, BlueprintReadOnly, Category = Pause )
     class UUserWidget* InventoryWidget;
 
 private:
+	/** Is the game paused ? */
     bool bIsPaused;
 };

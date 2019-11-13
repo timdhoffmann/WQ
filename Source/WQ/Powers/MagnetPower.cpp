@@ -6,16 +6,16 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "Props/Props.h"
 #include "Engine/EngineTypes.h"
-//#include "DrawDebugHelpers.h"
+#include "DrawDebugHelpers.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Camera/CameraComponent.h"
 #include "ConstructorHelpers.h"
 #include "MagnetIndicator.h"
 
-// Sets default values for this component's properties
+/** Sets default values for this component's properties */
 UMagnetPower::UMagnetPower()
 {
-	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
+	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features 
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
@@ -29,7 +29,7 @@ UMagnetPower::UMagnetPower()
 	MagnetizationRadiusCoeff = 0.8f;
 	Identifier = 0;
 
-	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
+	/// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
 	if (MagnetIndicatorClassFinder.Object)
 	{
@@ -38,12 +38,12 @@ UMagnetPower::UMagnetPower()
 }
 
 
-// Called when the game starts
+/** Called when the game starts */
 void UMagnetPower::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Create the sweep parameters
+	// Create the sweep parameters 
 	Sphere = FCollisionShape::MakeSphere(SphereRadius);
 	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius);
 	SweepParams = FCollisionQueryParams();
@@ -64,7 +64,7 @@ void UMagnetPower::BeginPlay()
 	}
 }
 
-// Called every frame
+/** Called every frame */
 void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -75,7 +75,7 @@ void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	}
 }
 
-// Behaviour when the power is pressed
+/** Behaviour when the power is pressed */
 void UMagnetPower::PowerPressed()
 {
 	// Activate the power only if it's not already activated or if the objects are not being dragged towards the player
@@ -87,7 +87,7 @@ void UMagnetPower::PowerPressed()
 	}
 }
 
-// Behaviour when the power is released
+/** Behaviour when the power is released */
 void UMagnetPower::PowerReleased()
 {
 	// Deactivate the power only if it's already activated
@@ -112,7 +112,7 @@ void UMagnetPower::PowerReleased()
 	}
 }
 
-// Update the magnet (target, objects in it...)
+/** Update the magnet (target, objects in it...) */
 void UMagnetPower::UpdateMagnet()
 {
 	// Update the sphere sweep, not taking into account the props
@@ -140,7 +140,7 @@ void UMagnetPower::UpdateMagnet()
 	{
 		PH->SetTargetLocation(FinalLocation);
 	}
-	//DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
+	DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
 	TArray<FOverlapResult> OutProps;

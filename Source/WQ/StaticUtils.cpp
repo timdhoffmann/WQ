@@ -10,6 +10,7 @@ UStaticUtils::UStaticUtils(const FObjectInitializer& ObjectInitializer)
 
 }
 
+/** Get a correct safe normal, even in the UE4 editor */
 FVector UStaticUtils::GetSafeNormal(FVector Vec, float Tolerance /* = 1.e-8f */)
 {
 	const float SquareSum = Vec.X * Vec.X + Vec.Y * Vec.Y + Vec.Z * Vec.Z;

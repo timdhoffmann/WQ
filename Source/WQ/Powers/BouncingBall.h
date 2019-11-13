@@ -16,10 +16,10 @@ class WQ_API ABouncingBall : public AActor
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+	/** Sets default values for this actor's properties */
 	ABouncingBall();
 
-	// Called every frame
+	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
 	/** Changes the scale of the ball elements in a given time */
@@ -38,7 +38,7 @@ public:
 	void ResetBall();
 
 protected:
-	// Called when the game starts or when spawned
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
 	/** Changes the simulation physics status */
@@ -55,9 +55,10 @@ protected:
 	//void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 protected:
-	// Array of all the meshes used for the ball
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	//TArray<UStaticMeshComponent*> BallMeshes;
+	// Mesh used for the ball
+	UPROPERTY()
 	UStaticMeshComponent* BallMesh;
 
 	/** Is the ball resizing? */

@@ -16,50 +16,51 @@ class WQ_API UMagnetPower : public UPower
 	GENERATED_BODY()
 
 public:	
-	// Sets default values for this component's properties
+	/** Sets default values for this component's properties */
 	UMagnetPower();
 
-	// Called every frame
+	/** Called every frame */
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
-	// Behaviour when the power is activated
+	/** Behaviour when the power is activated */
 	virtual void PowerPressed() override;
 
-	// Behaviour when the power is deactivated
+	/** Behaviour when the power is deactivated */
 	virtual void PowerReleased() override;
 
-	// Update the magnet (target, objects in it...)
+	/** Update the magnet (target, objects in it...) */
 	void UpdateMagnet();
 
 protected:
-	// Range of the power
+	/** Range of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetRange;
 
-	// Radius of the sphere
+	/** Radius of the center sphere colliding with the environment */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float SphereRadius;
 
-	// Radius of the power
+	/** Actual radius of the power, radius at which the objects are attracted */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetRadius;
 
-	// Force of the magnetization
+	/** Force of the magnetization */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetForce;
 
-	// Radius coefficient at which the magnetized props will be pulled (0.0 = Center of object, 1.0 = position at which it was pulled)
+	/** Radius coefficient at which the magnetized props will be pulled (0.0 = Center of object, 1.0 = position at which it was pulled) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float MagnetizationRadiusCoeff;
 
-	// Propulsion force
+	/** Propulsion force at which the objects are projected */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	float PropulsionForce;
 
-	// Blueprint class of the indicator
+	/** Blueprint class of the indicator */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	TSubclassOf<class AMagnetIndicator> MagnetIndicatorBP;
 
@@ -67,12 +68,12 @@ protected:
 	UPROPERTY()
 	AMagnetIndicator* MagnetIndicator;
 
-	// Sweep parameters
+	/** Sweep parameters */
 	FCollisionShape Sphere;
 	FCollisionShape BiggerSphere;
 	FCollisionQueryParams SweepParams;
 
-	// Is the magnet targetting activated
+	/** Is the magnet targetting activated */
 	bool bIsTargettingActivated;
 
 	/** Props list */

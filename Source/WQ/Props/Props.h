@@ -12,13 +12,13 @@ class WQ_API AProps : public APawn
 	GENERATED_BODY()
 
 public:
-	// Sets default values for this pawn's properties
+	/** Sets default values for this pawn's properties */
 	AProps();
 
-	// Called every frame
+	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
-	// Called to bind functionality to input
+	/** Called to bind functionality to input */
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	/** Changes the simulation physics status */
@@ -43,7 +43,7 @@ public:
 	void SetMaterial(class UMaterial* Mat);
 
 protected:
-	// Called when the game starts or when spawned
+	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
 protected:
