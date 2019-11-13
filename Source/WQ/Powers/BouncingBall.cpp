@@ -4,6 +4,7 @@
 #include "BouncingBall.h"
 #include "Math/UnrealMathUtility.h"
 #include "StaticUtils.h"
+#include "Enemies/WQAIEnemy.h"
 
 /** Sets default values */
 ABouncingBall::ABouncingBall()
@@ -17,6 +18,7 @@ ABouncingBall::ABouncingBall()
 	TargetScale = FVector::OneVector;
 	CurrentScalingStatus = 0.0f;
 	CurrentScalingSpeed = 0.0f;
+	Damage = 1;
 }
 
 /** Called when the game starts or when spawned */
@@ -30,9 +32,9 @@ void ABouncingBall::BeginPlay()
 	if (Temp.Num() > 0)
 		BallMesh = Temp[0];
 
-	//// Add the collision notification and disable the notifications for now
-	//BallMesh->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
-	//BallMesh->SetNotifyRigidBodyCollision(false);
+	// Add the collision notification and disable the notifications for now
+	BallMesh->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
+	BallMesh->SetNotifyRigidBodyCollision(false);
 	
 	// Activate all elements with zero scale, and disable physics
 	SetBallActive(true);
@@ -78,16 +80,6 @@ void ABouncingBall::Tick(float DeltaTime)
 		{
 			// Propulse the meshes towards the target
 			GetRootComponent()->SetWorldLocation(FMath::VInterpTo(GetRootComponent()->GetComponentLocation(), TelekinesisTarget->GetComponentLocation(), DeltaTime, TelekinesisStrength));
-
-			//for (UStaticMeshComponent* Mesh : BallMeshes)
-			//{
-			//	if (Mesh != nullptr)
-			//	{
-			//		//SetPhysicSimulation(false);
-			//		//SetPhysicSimulation(true);
-			//		Mesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * TelekinesisStrength * Mesh->GetMassScale(), NAME_None, true);
-			//	}
-			//}
 		}
 	}
 }
@@ -164,8 +156,8 @@ void ABouncingBall::Propulse(FVector Direction, float Strength)
 		//SetGravitySimulation(false);
 		BallMesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * BallMesh->GetMassScale(), NAME_None, true);
 
-		//// Activate the OnComponentHit call
-		//BallMesh->SetNotifyRigidBodyCollision(true);
+		// Activate the OnComponentHit call
+		BallMesh->SetNotifyRigidBodyCollision(true);
 	}
 }
 
@@ -201,9 +193,13 @@ void ABouncingBall::ResetBall()
 	SetCollisionProfile(TEXT("BallHeld"));
 }
 
-///** Allows us to remove durability when the ball hits the environment */
-//void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
-//{
-//	if (OtherActor != this && OtherActor->GetRootComponent()->GetCollisionObjectType() == )
-//}
+/** Allows us to damage enemies when hit while the ball is thrown */
+void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	AWQAIEnemy* Enemy = Cast<AWQAIEnemy>(OtherActor);
+	if (Enemy != nullptr)
+	{
+		Enemy->ApplyDamage(Damage);
+	}
+}
 

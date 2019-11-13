@@ -37,6 +37,9 @@ public:
 	/** Reset the ball position and scale */
 	void ResetBall();
 
+	/** Setter for the damage value */
+	inline void SetDamage(const float Value) { Damage = Value; }
+
 protected:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
@@ -50,9 +53,9 @@ protected:
 	/** Changes the collision profile */
 	void SetCollisionProfile(FName CollisionProfileName);
 
-	///** Allows us to remove durability when the ball hits the environment */
-	//UFUNCTION()
-	//void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+	/** Allows us to damage enemies when hit while the ball is thrown */
+	UFUNCTION()
+	void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 protected:
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
@@ -87,4 +90,7 @@ protected:
 
 	/** Force to be used for the telekinesis */
 	float TelekinesisStrength;
+
+	/** Damage value of the ball when it hits enemies */
+	int Damage;
 };

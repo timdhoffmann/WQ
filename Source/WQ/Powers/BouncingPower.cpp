@@ -25,6 +25,7 @@ UBouncingPower::UBouncingPower()
 	TelekinesisRange = 10000.0f;
 	TelekinesisForce = 50.0f;
 	ProjectionTimeLimit = 3.0f;
+	BallDamage = 1;
 
 	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> BouncingBallClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_BouncingBall.BP_BouncingBall_C'"));
@@ -46,6 +47,7 @@ void UBouncingPower::BeginPlay()
 		{
 			BouncingBall = World->SpawnActor<ABouncingBall>(BouncingBallBP, Character->GetFireSceneComponent()->GetComponentLocation(), Character->GetActorRotation()); // The bouncing ball starts disabled
 			BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			BouncingBall->SetDamage(BallDamage);
 		}
 	}
 	else

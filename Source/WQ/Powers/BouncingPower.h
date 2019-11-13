@@ -98,6 +98,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float ProjectionTimeLimit;
 
+	/** Damage value of the ball when it hits enemies (in Health points) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
+	int BallDamage;
+
 	/** Status of the time limit */
 	float CurrentProjectionTime;
 

@@ -33,14 +33,14 @@ public:
 	virtual void        SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	/** Getters */
-	inline float        GetHealth() const { return HealthPoints; }
+	inline int        GetHealth() const { return HealthPoints; }
 	//inline EAIStateEnum GetCurrentState() const { return InstanceState; }
 
 	///** Setters */
 	//inline void         TransitionState(const EAIStateEnum nextState) { InstanceState = nextState; }
 
 	/** Damaging interface */
-	void				ApplyDamage(const float damage) { HealthPoints -= damage; }
+	void				ApplyDamage(const int Damage);
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -48,14 +48,15 @@ protected:
 
 protected:
 	/** Initial health */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Enemies)
-	float               InitialHealthPoints;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = AI)
+	int               InitialHealthPoints;
 
 	///** Initial state */
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Enemies)
 	//EAIStateEnum        InitialState;
 
 	/** Track the current information of the AI character */
-    float               HealthPoints;
+	UPROPERTY(VisibleAnywhere)
+    int               HealthPoints;
     //EAIStateEnum        InstanceState;
 };
