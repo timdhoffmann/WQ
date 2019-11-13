@@ -1,11 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 #include "PauseManager.h"
-#include "WQPauseMenu.h"
-
 #include "Engine/Classes/GameFramework/Character.h"
 #include "Engine/Classes/GameFramework/PlayerController.h"
-
 #include "Engine/Classes/Kismet/GameplayStatics.h"
+#include "Blueprint/UserWidget.h"
 
 /** Constructor */
 UPauseManager::UPauseManager()
