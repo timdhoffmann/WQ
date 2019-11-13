@@ -36,8 +36,8 @@ AWQMinionController::AWQMinionController()
 
     // Configure the Sight Sense of AI Perception
     UAISenseConfig_Sight* SightConfiguration = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
-    SightConfiguration->SightRadius = 1000.0f;
-    SightConfiguration->LoseSightRadius = 1500.0f;
+    SightConfiguration->SightRadius = 500.0f;
+    SightConfiguration->LoseSightRadius = 1000.0f;
     SightConfiguration->PeripheralVisionAngleDegrees = 360.0f;
     SightConfiguration->DetectionByAffiliation.bDetectEnemies = true;
     SightConfiguration->DetectionByAffiliation.bDetectNeutrals = true;
@@ -67,6 +67,13 @@ void AWQMinionController::BeginPlay()
     NextActorToReach = nullptr;
     NextActorPosition = FVector::ZeroVector;
     NextActorDistance = std::numeric_limits<float>::max();
+
+    AActor* ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
+
+    if ( ForgeTarget != nullptr ) {
+        NextActorToReach = ForgeTarget;
+        BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
+    }
 
     RunBehaviorTree( BehaviorTree );
 }
@@ -104,8 +111,8 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
     for ( AActor* actor : visibleActors ) {
         FVector actorTranslation = actor->GetActorLocation();
         float distanceToMinion = FVector::Distance( actorTranslation, minionWorldPosition );
-
-        if ( distanceToMinion < NextActorDistance ) {
+        
+        if ( actor->ActorHasTag( "Player" ) ) {
             NextActorToReach = actor;
             NextActorDistance = distanceToMinion;
             NextActorPosition = actorTranslation;
@@ -117,8 +124,14 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
         //character->TransitionState( EAIStateEnum::AISE_InChase );
 
         BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
+    } else {
+        AActor* ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
+
+        if ( ForgeTarget != nullptr ) {
+            NextActorToReach = ForgeTarget;
+
+            character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), ForgeTarget->GetActorLocation() ).Quaternion() );
+            BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
+        }
     }
-	//else {
- //       character->TransitionState( EAIStateEnum::AISE_Alive );
- //   }
 }
