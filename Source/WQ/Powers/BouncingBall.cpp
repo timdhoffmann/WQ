@@ -6,6 +6,8 @@
 #include "StaticUtils.h"
 #include "Enemies/WQAIEnemy.h"
 
+#include "GameFramework/CharacterMovementComponent.h"
+
 /** Sets default values */
 ABouncingBall::ABouncingBall()
 {
@@ -199,7 +201,13 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	AWQAIEnemy* Enemy = Cast<AWQAIEnemy>(OtherActor);
 	if (Enemy != nullptr)
 	{
-		Enemy->ApplyDamage(Damage);
+        Enemy->ApplyDamage( Damage );
+
+        UCharacterMovementComponent* characterMovement = Enemy->GetCharacterMovement();
+        characterMovement->AddImpulse( UStaticUtils::GetSafeNormal( NormalImpulse ) * 1000000.0f * BallMesh->GetMassScale() );
+        /*
+        characterMovement->Velocity = FVector::ZeroVector;
+        characterMovement->UpdateComponentVelocity();*/
 	}
 }
 

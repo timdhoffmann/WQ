@@ -14,6 +14,7 @@
 #include "Runtime/AIModule/Classes/Perception/AISenseConfig_Sight.h"
 
 #include "Runtime/Engine/Classes/Kismet/KismetMathLibrary.h"
+#include "Runtime/Engine/Classes/GameFramework/PawnMovementComponent.h"
 
 #include <limits>
 
@@ -36,8 +37,8 @@ AWQMinionController::AWQMinionController()
 
     // Configure the Sight Sense of AI Perception
     UAISenseConfig_Sight* SightConfiguration = CreateDefaultSubobject<UAISenseConfig_Sight>( TEXT( "Sight Config" ) );
-    SightConfiguration->SightRadius = 500.0f;
-    SightConfiguration->LoseSightRadius = 1000.0f;
+    SightConfiguration->SightRadius = 1500.0f;
+    SightConfiguration->LoseSightRadius = 2000.0f;
     SightConfiguration->PeripheralVisionAngleDegrees = 360.0f;
     SightConfiguration->DetectionByAffiliation.bDetectEnemies = true;
     SightConfiguration->DetectionByAffiliation.bDetectNeutrals = true;
@@ -57,7 +58,7 @@ AWQMinionController::AWQMinionController()
 
     // TODO Investigate if 3D AI Sight worth a try?
     // Right now, the plugin API is crappy and doesnt work w/ Actor targets...
-    PrimaryActorTick.bCanEverTick = true; //We won't be ticked by default  
+    PrimaryActorTick.bCanEverTick = false; // true; //We won't be ticked by default  
 }
 
 void AWQMinionController::BeginPlay()
@@ -93,7 +94,7 @@ void AWQMinionController::Tick( float DeltaTime )
     if ( NextActorToReach != nullptr ) {
         NextActorPosition = NextActorToReach->GetActorLocation();
 
-        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion() );
+        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion(), ETeleportType::TeleportPhysics );
 
         BlackboardComponent->SetValueAsVector( TEXT( "MoveToLocationKey" ), NextActorPosition );
     }
@@ -113,14 +114,19 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
         float distanceToMinion = FVector::Distance( actorTranslation, minionWorldPosition );
         
         if ( actor->ActorHasTag( "Player" ) ) {
+            GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Red, FString( "Found PLAYER!" ) );
             NextActorToReach = actor;
             NextActorDistance = distanceToMinion;
             NextActorPosition = actorTranslation;
+            break;
         }
     }
 
+    UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>( BrainComponent );
+    BTComp->StopTree( EBTStopMode::Forced );
+
     if ( NextActorToReach != nullptr ) {
-        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion() );
+        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion(), ETeleportType::TeleportPhysics );
         //character->TransitionState( EAIStateEnum::AISE_InChase );
 
         BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
@@ -130,8 +136,10 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
         if ( ForgeTarget != nullptr ) {
             NextActorToReach = ForgeTarget;
 
-            character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), ForgeTarget->GetActorLocation() ).Quaternion() );
+            character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), ForgeTarget->GetActorLocation() ).Quaternion(), ETeleportType::TeleportPhysics );
             BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
         }
     }
+
+    BTComp->StartTree( *BehaviorTree );
 }
