@@ -75,7 +75,7 @@ void AWQMinionController::BeginPlay()
         NextActorToReach = ForgeTarget;
         BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
     }
-
+ 
     RunBehaviorTree( BehaviorTree );
 }
 

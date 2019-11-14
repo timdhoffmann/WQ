@@ -66,7 +66,7 @@ void ABouncingBall::Tick(float DeltaTime)
 		FVector Direction = TelekinesisTarget->GetComponentLocation() - GetRootComponent()->GetComponentLocation();
 
 		// Stop if we are near enough the destination
-		if (Direction.SizeSquared() < 1000.0f)
+		if (Direction.SizeSquared() < 1.0f)
 		{
 			// Change needed parameters
 			bIsBallTelekinesisd = false;
