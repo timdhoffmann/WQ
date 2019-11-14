@@ -15,9 +15,21 @@ public:
 	/** Sets default values for this actor's properties */
 	AAudioManager();
 
-	/** Test */
-	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = "Test")
-	void PlayTest();
+	/** Sound event of a prop being magnetized */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Powers)
+	void PlayPropMagnetized(AActor* Target);
+
+	/** Sound ambiance of a prop while magnetized */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Powers)
+	void SetPropMagnetizedAmbiance(bool bState, AActor* Target);
+
+	/** Set the global ambiance active or not */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Environment)
+	void SetEnvironmentAmbiance(bool bState);
+
+	/** Change the state of the global ambiance */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Environment)
+	void SetEnvironmentState(bool bIsOutside);
 
 protected:
 	/** Called when the game starts or when spawned */

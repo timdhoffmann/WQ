@@ -11,6 +11,8 @@
 #include "Camera/CameraComponent.h"
 #include "ConstructorHelpers.h"
 #include "MagnetIndicator.h"
+#include "Managers/WQGameInstance.h"
+#include "Managers/AudioManager.h"
 
 /** Sets default values for this component's properties */
 UMagnetPower::UMagnetPower()
@@ -97,6 +99,9 @@ void UMagnetPower::PowerReleased()
 
 		Character->ClearAllPhysicHandle();
 
+		// Get the game instance for stopping the sounds
+		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
+
 		for (AProps* Prop : MagnetizedProps)
 		{
 			if (Prop != nullptr)
@@ -104,6 +109,12 @@ void UMagnetPower::PowerReleased()
 				Prop->FlyStop();
 				Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
 				Prop->SetMaterial(Mat1);
+
+				// Stop the ambiance sound
+				if (IsValid(WQGI))
+				{
+					WQGI->AudioManager()->SetPropMagnetizedAmbiance(false, Prop);
+				}
 			}
 		}
 		MagnetizedProps.Empty();
@@ -146,6 +157,9 @@ void UMagnetPower::UpdateMagnet()
 	TArray<FOverlapResult> OutProps;
 	if (World->OverlapMultiByChannel(OutProps, FinalLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3, BiggerSphere, SweepParams))
 	{
+		// Get the game instance for playing the sounds
+		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
+
 		for (FOverlapResult Res : OutProps)
 		{
 			AProps* Prop = Cast<AProps>(Res.Actor);
@@ -161,6 +175,13 @@ void UMagnetPower::UpdateMagnet()
 				Prop->FlyTowards(FinalLocation, MagnetForce);
 				MagnetizedProps.Add(Prop);
 				Prop->SetMaterial(Mat2);
+
+				// Play the required sound
+				if (IsValid(WQGI))
+				{
+					WQGI->AudioManager()->PlayPropMagnetized(Prop);
+					WQGI->AudioManager()->SetPropMagnetizedAmbiance(true, Prop);
+				}
 			}
 		}
 	}

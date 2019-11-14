@@ -11,22 +11,113 @@
 	<StreamedFiles/>
 	<MediaFilesNotInAnyBank/>
 	<SoundBanks>
-		<SoundBank Id="1355168291" GUID="{701ECBBD-9C7B-4030-8CDB-749EE5D1C7B9}" Language="SFX">
+		<SoundBank Id="1262679176" Language="SFX">
+			<ObjectPath>\SoundBanks\Default Work Unit\Proto_Test</ObjectPath>
+			<ShortName>Proto_Test</ShortName>
+			<Path>Proto_Test.bnk</Path>
+			<IncludedEvents>
+				<Event Id="1145981007" Name="Play_Fire_On_Rnd" ObjectPath="\Events\Default Work Unit\Sfx\Play_Fire_On_Rnd"/>
+				<Event Id="48784928" Name="Play_Footsteps_Sw" ObjectPath="\Events\Default Work Unit\Player\Play_Footsteps_Sw"/>
+				<Event Id="1884723299" Name="Play_WQ_Amb_Initialize_Lp" ObjectPath="\Events\Default Work Unit\Amb\Play_WQ_Amb_Initialize_Lp"/>
+				<Event Id="1599170001" Name="Play_WQ_Amb_Wind_Cold_Lp_Os" ObjectPath="\Events\Default Work Unit\Amb\Play_WQ_Amb_Wind_Cold_Lp_Os"/>
+				<Event Id="502856543" Name="Play_WQ_Sfx_Fire_Constant_Lp" ObjectPath="\Events\Default Work Unit\Sfx\Play_WQ_Sfx_Fire_Constant_Lp"/>
+				<Event Id="1994703457" Name="Stop_WQ_Sfx_Fire_Constant_Lp" ObjectPath="\Events\Default Work Unit\Sfx\Stop_WQ_Sfx_Fire_Constant_Lp"/>
+			</IncludedEvents>
+			<IncludedMemoryFiles>
+				<File Id="41987945" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR6_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR6_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="72028421" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR7_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR7_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="107881247" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR5_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR5_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="122134693" Language="SFX">
+					<ShortName>WQ_Amb_Drones_01_Lp.wav</ShortName>
+					<Path>SFX\WQ_Amb_Drones_01_Lp_D79FB2B7.wem</Path>
+				</File>
+				<File Id="150191838" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR7_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR7_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="269681896" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR1_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR1_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="305055190" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR5_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR5_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="337736733" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR1_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR1_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="340001075" Language="SFX">
+					<ShortName>WQ_Sfx_Fire_On_01_Os.wav</ShortName>
+					<Path>SFX\WQ_Sfx_Fire_On_01_Os_10C4C929.wem</Path>
+				</File>
+				<File Id="352054759" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR2_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR2_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="545545442" Language="SFX">
+					<ShortName>WQ_Sfx_Fire_Constant_Lp.wav</ShortName>
+					<Path>SFX\WQ_Sfx_Fire_Constant_Lp_D79FB2B7.wem</Path>
+				</File>
+				<File Id="552247316" Language="SFX">
+					<ShortName>WQ_Amb_Wind_Cold_Lp_Os.wav</ShortName>
+					<Path>SFX\WQ_Amb_Wind_Cold_Lp_Os_D79FB2B7.wem</Path>
+				</File>
+				<File Id="556139334" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR4_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR4_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="710163011" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR8_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR8_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="845100067" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR4_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR4_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="884149298" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR3_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR3_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="884349937" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR6_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR6_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="952556684" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR8_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR8_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="974334671" Language="SFX">
+					<ShortName>FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR3_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR3_mono_10C4C929.wem</Path>
+				</File>
+				<File Id="994353497" Language="SFX">
+					<ShortName>WQ_Sfx_Fire_On_02_Os.wav</ShortName>
+					<Path>SFX\WQ_Sfx_Fire_On_02_Os_10C4C929.wem</Path>
+				</File>
+				<File Id="1042205024" Language="SFX">
+					<ShortName>WQ_Sfx_Fire_On_03_Os.wav</ShortName>
+					<Path>SFX\WQ_Sfx_Fire_On_03_Os_10C4C929.wem</Path>
+				</File>
+				<File Id="1046560244" Language="SFX">
+					<ShortName>FOOTSTEP_Leather_Wood_Hollow_Walk_RR2_mono.wav</ShortName>
+					<Path>SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR2_mono_10C4C929.wem</Path>
+				</File>
+			</IncludedMemoryFiles>
+		</SoundBank>
+		<SoundBank Id="1355168291" Language="SFX">
 			<ObjectPath>Init</ObjectPath>
 			<ShortName>Init</ShortName>
 			<Path>Init.bnk</Path>
-		</SoundBank>
-		<SoundBank Id="3737048823" GUID="{303B4E28-AA51-4696-BE33-501418725F80}" Language="SFX">
-			<ObjectPath>\SoundBanks\Default Work Unit\AB_Test</ObjectPath>
-			<ShortName>AB_Test</ShortName>
-			<Path>AB_Test.bnk</Path>
-			<IncludedEvents>
-				<Event Id="3187507146" Name="Play_Test" ObjectPath="\Events\Default Work Unit\Play_Test" GUID="{6675F220-D6F4-496F-86E9-FB46242AEC90}" DurationType="Infinite"/>
-				<Event Id="80081987" Name="Play_Test_Bip_2d" ObjectPath="\Events\Default Work Unit\Play_Test_Bip_2d" GUID="{9AF74C9F-6B65-488E-B9B3-E1B75E1BE776}" DurationType="OneShot" DurationMin="1.000000" DurationMax="1.000000"/>
-				<Event Id="237865631" Name="Play_Test_Bip_2d_Gp" ObjectPath="\Events\Default Work Unit\Play_Test_Bip_2d_Gp" GUID="{3740C9E5-9DAD-4297-A6F9-0B9B2E5277F0}" DurationType="Infinite"/>
-				<Event Id="63304432" Name="Play_Test_Bip_3d" ObjectPath="\Events\Default Work Unit\Play_Test_Bip_3d" GUID="{B18CF8D3-5D37-4A6F-9BCA-C5CA0913CE61}" DurationType="Infinite"/>
-				<Event Id="1664319863" Name="Play_Test_Sw" ObjectPath="\Events\Default Work Unit\Play_Test_Sw" GUID="{E43CE94D-720D-42FA-9744-811ABD4F1A65}" DurationType="OneShot" DurationMin="1.000000" DurationMax="1.000000"/>
-			</IncludedEvents>
 		</SoundBank>
 	</SoundBanks>
 </SoundBanksInfo>

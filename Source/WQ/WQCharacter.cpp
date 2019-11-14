@@ -193,7 +193,7 @@ void AWQCharacter::OnFire()
 
 		if (IsValid(WQGI))
 		{
-			WQGI->AudioManager()->PlayTest();
+			//WQGI->AudioManager()->PlayTest();
 		}
 	}
 

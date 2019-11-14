@@ -5,14 +5,22 @@
 #include "AudioManager.h"
 #include "EventManager.h"
 #include "PauseManager.h"
+#include "Kismet/GameplayStatics.h"
+#include "WQCharacter.h"
 
 /** Accessor for C++ & BP */
  // Singleton-like accessor. I only use this as a workaround for PIE
  // The GameInstance lifecycle is different in PIE
  // In proper builds, this wouldn't be necessary
 AAudioManager* UWQGameInstance::AudioManager()
-{;
-	return IsValid(AudioManagerInstance) ? AudioManagerInstance : AudioManagerInstance = GetWorld()->SpawnActor<AAudioManager>(AudioManagerBP);
+{
+	if (!IsValid(AudioManagerInstance))
+	{
+		AudioManagerInstance = GetWorld()->SpawnActor<AAudioManager>(AudioManagerBP);
+		AudioManagerInstance->AttachToComponent(UGameplayStatics::GetPlayerCharacter(GetWorld(), 0)->GetRootComponent(), FAttachmentTransformRules::SnapToTargetIncludingScale);
+	}
+
+	return AudioManagerInstance;
 }
 
 /** Accessor for C++ & BP */

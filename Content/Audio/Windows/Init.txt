@@ -1,3 +1,11 @@
+State Group	ID	Name			Wwise Object Path	Notes
+	3589756548	Int_Ext			\Default Work Unit\Int_Ext	
+
+State	ID	Name	State Group			Notes
+	0	None	Int_Ext			
+	645492555	Out	Int_Ext			
+	1752637612	In	Int_Ext			
+
 Game Parameter	ID	Name			Wwise Object Path	Notes
 	504532776	Brick			\Factory Reflect Acoustic Textures\Textures\Brick	
 	513139656	Mountain			\Factory Reflect Acoustic Textures\Textures\Mountain	
@@ -15,7 +23,12 @@ Game Parameter	ID	Name			Wwise Object Path	Notes
 	4262522749	Wood_Bright			\Factory Reflect Acoustic Textures\Textures\Wood_Bright	
 
 Audio Bus	ID	Name			Wwise Object Path	Notes
+	393239870	Sfx			\Default Work Unit\Master Audio Bus\Sfx	
+	985987111	Motion Factory Bus			\Default Work Unit\Motion Factory Bus	
 	3803692087	Master Audio Bus			\Default Work Unit\Master Audio Bus	
+
+Effect plug-ins	ID	Name	Type				Notes
+	270226430	Medium_Room_AHP	Auro Headphone			
 
 Audio Devices	ID	Name	Type				Notes
 	2317455096	No_Output	No Output			
