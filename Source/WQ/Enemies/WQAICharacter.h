@@ -33,7 +33,7 @@ public:
 	virtual void        SetupPlayerInputComponent(UInputComponent* PlayerInputComponent) override;
 
 	/** Getters */
-	inline int        GetHealth() const { return HealthPoints; }
+	inline int          GetHealth() const { return HealthPoints; }
 	//inline EAIStateEnum GetCurrentState() const { return InstanceState; }
 
 	///** Setters */
@@ -45,6 +45,9 @@ public:
 protected:
 	/** Called when the game starts or when spawned */
 	virtual void        BeginPlay() override;
+
+    UFUNCTION( BlueprintImplementableEvent )
+    void                ReceivedDamage();
 
 protected:
 	/** Initial health */

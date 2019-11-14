@@ -48,6 +48,8 @@ void AWQAICharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 void AWQAICharacter::ApplyDamage(const int Damage)
 {
 	HealthPoints -= Damage;
+    
+    this->ReceivedDamage();
 
 	if (HealthPoints <= 0)
 	{
@@ -55,4 +57,3 @@ void AWQAICharacter::ApplyDamage(const int Damage)
 		this->Destroy();
 	}
 }
-
