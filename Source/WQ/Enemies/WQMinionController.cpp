@@ -28,8 +28,10 @@ AWQMinionController::AWQMinionController()
     BehaviorTree = btFinder.Object;
 
     BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>( TEXT( "BlackboardComponent" ) );
-    BlackboardComponent->InitializeBlackboard( *( bbData.Object ) );
 
+    UBlackboardData* BlackboardAsset = bbData.Object;
+
+    InitializeBlackboard( *BlackboardComponent, *BlackboardAsset );
     BehaviorTree->BlackboardAsset = BlackboardComponent->GetBlackboardAsset();
 
     // Setup the perception component
@@ -43,6 +45,9 @@ AWQMinionController::AWQMinionController()
     SightConfiguration->DetectionByAffiliation.bDetectEnemies = true;
     SightConfiguration->DetectionByAffiliation.bDetectNeutrals = true;
     SightConfiguration->DetectionByAffiliation.bDetectFriendlies = true;
+    SightConfiguration->AutoSuccessRangeFromLastSeenLocation = 15000.0f;
+
+    SightConfiguration->SetMaxAge( 3000000.0f );
 
     PerceptionComponent->ConfigureSense( *SightConfiguration );
     PerceptionComponent->SetDominantSense( SightConfiguration->GetSenseImplementation() );
@@ -53,12 +58,14 @@ AWQMinionController::AWQMinionController()
     
     SetPerceptionComponent( *PerceptionComponent );
 
+    BlackboardComponent->SetValueAsObject( TEXT( "SelfActor" ), this );
+
     NextActorToReach = nullptr;
     NextActorDistance = std::numeric_limits<float>::max();
 
     // TODO Investigate if 3D AI Sight worth a try?
     // Right now, the plugin API is crappy and doesnt work w/ Actor targets...
-    PrimaryActorTick.bCanEverTick = false; // true; //We won't be ticked by default  
+    PrimaryActorTick.bCanEverTick = true; // true; //We won't be ticked by default  
 }
 
 void AWQMinionController::BeginPlay()
@@ -83,20 +90,14 @@ void AWQMinionController::Tick( float DeltaTime )
 {
     Super::Tick( DeltaTime ); 
 
-    AWQAICharacter* character = reinterpret_cast< AWQAICharacter* >( GetCharacter() );
-
-/* 
-    // HP API Test stuff
-    character->ApplyDamages( 1.0f );
-    GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Red, FString( "HP: " + FString::SanitizeFloat( character->GetHealth() ) ) );
-*/
-
     if ( NextActorToReach != nullptr ) {
         NextActorPosition = NextActorToReach->GetActorLocation();
 
+        AWQAICharacter* character = reinterpret_cast< AWQAICharacter* >( GetCharacter() );
         character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion(), ETeleportType::TeleportPhysics );
 
         BlackboardComponent->SetValueAsVector( TEXT( "MoveToLocationKey" ), NextActorPosition );
+        BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
     }
 }
 
@@ -104,42 +105,35 @@ void AWQMinionController::OnActorInSight( const TArray<AActor*>& visibleActors )
 {
     AWQAICharacter* character = reinterpret_cast< AWQAICharacter* >( GetCharacter() );
     const FVector minionWorldPosition = character->GetActorLocation();
-
-    NextActorToReach = nullptr;
-    NextActorPosition = FVector::ZeroVector;
-    NextActorDistance = std::numeric_limits<float>::max();
-
+    /*
+        NextActorToReach = nullptr;
+        NextActorPosition = FVector::ZeroVector;
+        NextActorDistance = std::numeric_limits<float>::max();
+    */
     for ( AActor* actor : visibleActors ) {
         FVector actorTranslation = actor->GetActorLocation();
         float distanceToMinion = FVector::Distance( actorTranslation, minionWorldPosition );
         
-        if ( actor->ActorHasTag( "Player" ) ) {
-            GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Red, FString( "Found PLAYER!" ) );
+        FString objName;
+        actor->GetName( objName );
+        if ( objName == "FirstPersonCharacter2" || actor->ActorHasTag( "Player" ) ) {
+            GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Red, FString( "GO TO PLAYER!" ) );
             NextActorToReach = actor;
             NextActorDistance = distanceToMinion;
             NextActorPosition = actorTranslation;
-            break;
-        }
-    }
-
-    UBehaviorTreeComponent* BTComp = Cast<UBehaviorTreeComponent>( BrainComponent );
-    BTComp->StopTree( EBTStopMode::Forced );
-
-    if ( NextActorToReach != nullptr ) {
-        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion(), ETeleportType::TeleportPhysics );
-        //character->TransitionState( EAIStateEnum::AISE_InChase );
-
-        BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
-    } else {
-        AActor* ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
-
-        if ( ForgeTarget != nullptr ) {
-            NextActorToReach = ForgeTarget;
-
-            character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), ForgeTarget->GetActorLocation() ).Quaternion(), ETeleportType::TeleportPhysics );
+            character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion(), ETeleportType::TeleportPhysics );
+          
             BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
+            return;
         }
     }
 
-    BTComp->StartTree( *BehaviorTree );
+    AActor* ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
+    if ( ForgeTarget != nullptr ) {
+        GEngine->AddOnScreenDebugMessage( -1, 1.0f, FColor::Yellow, FString( "GO TO FORGE!" ) );
+        NextActorToReach = ForgeTarget;
+        character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), ForgeTarget->GetActorLocation() ).Quaternion(), ETeleportType::TeleportPhysics );
+        
+        BlackboardComponent->SetValueAsObject( TEXT( "MoveToActorKey" ), NextActorToReach );
+    }
 }

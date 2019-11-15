@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "AIController.h"
+#include "Runtime/AIModule/Classes/Perception/AIPerceptionTypes.h"
 #include "WQMinionController.generated.h"
 
 class UBehaviorTree;

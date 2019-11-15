@@ -1,5 +1,5 @@
-Proto_Test	"Play_WQ_Amb_Initialize_Lp"
 Proto_Test	"Play_Fire_On_Rnd"
+Proto_Test	"Play_WQ_Amb_Initialize_Lp"
 Proto_Test	"Play_WQ_Sfx_Fire_Constant_Lp"
-Proto_Test	"Play_Footsteps_Sw"
 Proto_Test	"Stop_WQ_Sfx_Fire_Constant_Lp"
+Proto_Test	"Play_Footsteps_Sw"
