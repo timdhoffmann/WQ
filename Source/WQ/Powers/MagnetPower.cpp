@@ -118,8 +118,10 @@ void UMagnetPower::PowerReleased()
 			}
 		}
 		MagnetizedProps.Empty();
-		if(MagnetIndicator)
+		if (MagnetIndicator)
+		{
 			MagnetIndicator->SetActorActive(false);
+		}
 	}
 }
 

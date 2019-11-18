@@ -31,6 +31,10 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Environment)
 	void SetEnvironmentState(bool bIsOutside);
 
+	/** Sound event of footsteps */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Character)
+	void PlayFootsteps(AActor* Target);
+
 protected:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;

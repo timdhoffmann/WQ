@@ -49,8 +49,8 @@ public:
 protected:
 	virtual void BeginPlay();
 
-	/** Fires a projectile. */
-	void OnFire();
+	/** Called every frame */
+	virtual void Tick(float DeltaTime) override;
 
 	/** Handles moving forward/backward */
 	void MoveForward(float Val);
@@ -129,10 +129,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector GunOffset;
 
-	/** Projectile class to spawn */
-	UPROPERTY(EditDefaultsOnly, Category=Projectile)
-	TSubclassOf<class AWQProjectile> ProjectileClass;
-
 	/** Sound to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class USoundBase* FireSound;
@@ -144,6 +140,26 @@ protected:
 	/** HeadBob shake blueprint */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
 	TSubclassOf<class UCameraShake> HeadbobShake;
+
+	/** Normal footsteps interval in distance (cm) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Footsteps)
+	float NormalFootstepsInterval;
+
+	/** Running footsteps interval in distance (cm) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Footsteps)
+	float RunningFootstepsInterval;
+
+	/** Current status of the footsteps interval */
+	float CurrentFootstepsInterval;
+
+	/** Current status of the footsteps distance */
+	float FootstepsStatus;
+
+	/** Has the footstep sound when the character is stopping been played ? */
+	bool bLastFootstepPlayed;
+
+	/** Location of the character in the last frame */
+	FVector LastLocation;
 
 	/** Called when the player presses the power input */
 	FPowerPressed PowerPressedEvent;

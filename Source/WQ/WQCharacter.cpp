@@ -29,6 +29,9 @@ DEFINE_LOG_CATEGORY_STATIC(LogFPChar, Warning, All);
 
 AWQCharacter::AWQCharacter()
 {
+	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+
 	// Default values
 	// set our turn rates for input
 	BaseTurnRate = 45.f;
@@ -42,6 +45,10 @@ AWQCharacter::AWQCharacter()
 		AddPhysicHandle(i);
 	}
 	HandlesUsed = 0;
+	NormalFootstepsInterval = 400.0f;
+	RunningFootstepsInterval = 400.0f;
+	FootstepsStatus = 0.0f;
+	bLastFootstepPlayed = true;
 }
 
 void AWQCharacter::BeginPlay()
@@ -74,6 +81,41 @@ void AWQCharacter::BeginPlay()
 	{
 		PowerIndex++;
 		Powers[PowerIndex]->SetPowerActive(true); // First power
+	}
+
+	// Initialize the footsteps variables
+	LastLocation = GetActorLocation();
+	CurrentFootstepsInterval = NormalFootstepsInterval;
+}
+
+void AWQCharacter::Tick(float DeltaTime)
+{
+	// Footsteps logic if the velocity is non null
+	if (GetVelocity().SizeSquared() != 0.0f)
+	{
+		FootstepsStatus += (GetActorLocation() - LastLocation).Size();
+		UE_LOG(LogTemp, Log, TEXT("= a %f"), FootstepsStatus);
+		LastLocation = GetActorLocation();
+
+		if (FootstepsStatus >= CurrentFootstepsInterval)
+		{
+			FootstepsStatus = 0.0f;
+			UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetGameInstance());
+			if (IsValid(WQGI))
+			{
+				WQGI->AudioManager()->PlayFootsteps(this);
+			}
+		}
+	}
+	else if (!bLastFootstepPlayed)
+	{
+		bLastFootstepPlayed = true;
+		FootstepsStatus = 0.0f;
+		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetGameInstance());
+		if (IsValid(WQGI))
+		{
+			WQGI->AudioManager()->PlayFootsteps(this);
+		}
 	}
 }
 
@@ -164,51 +206,6 @@ void AWQCharacter::PauseTriggered()
     reinterpret_cast< UWQGameInstance* >( GetGameInstance() )->PauseManager()->ShowHidePauseMenu();
 }
 
-void AWQCharacter::OnFire()
-{
-	// try and fire a projectile
-	if (ProjectileClass != nullptr)
-	{
-		UWorld* const World = GetWorld();
-		if (World != nullptr)
-		{
-			const FRotator SpawnRotation = GetControlRotation();
-			// MuzzleOffset is in camera space, so transform it to world space before offsetting from the character location to find the final muzzle position
-			const FVector SpawnLocation = ((FP_MuzzleLocation != nullptr) ? FP_MuzzleLocation->GetComponentLocation() : GetActorLocation()) + SpawnRotation.RotateVector(GunOffset);
-
-			//Set Spawn Collision Handling Override
-			FActorSpawnParameters ActorSpawnParams;
-			ActorSpawnParams.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButDontSpawnIfColliding;
-
-			// spawn the projectile at the muzzle
-			World->SpawnActor<AWQProjectile>(ProjectileClass, SpawnLocation, SpawnRotation, ActorSpawnParams);
-		}
-	}
-
-	// try and play the sound if specified
-	if (FireSound != nullptr)
-	{
-		//UGameplayStatics::PlaySoundAtLocation(this, FireSound, GetActorLocation());
-		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
-
-		if (IsValid(WQGI))
-		{
-			//WQGI->AudioManager()->PlayTest();
-		}
-	}
-
-	// try and play a firing animation if specified
-	if (FireAnimation != nullptr)
-	{
-		// Get the animation object for the arms mesh
-		UAnimInstance* AnimInstance = Mesh1P->GetAnimInstance();
-		if (AnimInstance != nullptr)
-		{
-			AnimInstance->Montage_Play(FireAnimation, 1.f);
-		}
-	}
-}
-
 void AWQCharacter::MoveForward(float Value)
 {
 	if (Value != 0.0f)
@@ -221,6 +218,8 @@ void AWQCharacter::MoveForward(float Value)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
 		}
+
+		bLastFootstepPlayed = false;
 	}
 }
 
@@ -236,6 +235,8 @@ void AWQCharacter::MoveRight(float Value)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
 		}
+
+		bLastFootstepPlayed = false;
 	}
 }
 
