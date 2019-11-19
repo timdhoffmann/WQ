@@ -7,6 +7,8 @@
 #include "Enemies/WQAIEnemy.h"
 
 #include "GameFramework/CharacterMovementComponent.h"
+#include "GameFramework/WorldSettings.h"
+#include "Kismet/GameplayStatics.h" 
 
 /** Sets default values */
 ABouncingBall::ABouncingBall()
@@ -21,6 +23,12 @@ ABouncingBall::ABouncingBall()
 	CurrentScalingStatus = 0.0f;
 	CurrentScalingSpeed = 0.0f;
 	Damage = 1;
+
+    SlowmoEnabled = true;
+    IsInSlowDown = false;
+    SlowmoDuration = 1.0f;
+    SlowmoDelay = 0.3f;
+    SlowmoLeverage = 0.1f;
 }
 
 /** Called when the game starts or when spawned */
@@ -205,9 +213,30 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 
         UCharacterMovementComponent* characterMovement = Enemy->GetCharacterMovement();
         characterMovement->AddImpulse( UStaticUtils::GetSafeNormal( NormalImpulse ) * 1000000.0f * BallMesh->GetMassScale() );
-        /*
-        characterMovement->Velocity = FVector::ZeroVector;
-        characterMovement->UpdateComponentVelocity();*/
+
+        FTimerDelegate TimerDel;
+        TimerDel.BindUFunction( this, FName( "TriggerSlowdown" ), Enemy );
+
+        if ( SlowmoEnabled ) {
+            GetWorld()->GetTimerManager().SetTimer( SlowDownTriggerTimerHandle, TimerDel, SlowmoDelay, false );
+        }
 	}
 }
 
+void ABouncingBall::TriggerSlowdown( AWQAIEnemy* touchedActor )
+{
+    // Apply bullet time thingy
+    if ( IsInSlowDown ) {
+        touchedActor->SetTimeDilation( 1.0f );
+        this->CustomTimeDilation = 1.0f;
+    } else {
+        touchedActor->SetTimeDilation( SlowmoLeverage );
+        this->CustomTimeDilation = SlowmoLeverage;
+
+        FTimerDelegate TimerDel;
+        TimerDel.BindUFunction( this, FName( "TriggerSlowdown" ), touchedActor );
+        GetWorld()->GetTimerManager().SetTimer( SlowDownTriggerTimerHandle, TimerDel, SlowmoDuration, false );
+    }
+
+    IsInSlowDown = !IsInSlowDown;
+}

@@ -14,4 +14,6 @@ class WQ_API AWQAIEnemy : public AWQAICharacter
 {
 	GENERATED_BODY()
 	
+public:
+    inline void SetTimeDilation( const float dilationFactor ) { CustomTimeDilation = dilationFactor; }
 };

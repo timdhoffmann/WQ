@@ -26,7 +26,7 @@ void AWQAICharacter::BeginPlay()
 void AWQAICharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+    
     //if ( HealthPoint <= 0.0f ) {
     //    InstanceState = EAIStateEnum::AISE_Dead;
     //}

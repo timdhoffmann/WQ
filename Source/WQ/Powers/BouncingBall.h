@@ -39,6 +39,11 @@ public:
 
 	/** Setter for the damage value */
 	inline void SetDamage(const float Value) { Damage = Value; }
+    
+    inline void SetSlowmoState( const bool isEnabled ) { SlowmoEnabled = isEnabled; }
+    inline void SetSlowmoDelay( const float delayInSecs ) { SlowmoDelay = delayInSecs; }
+    inline void SetSlowmoDuration( const float durationInSecs ) { SlowmoDuration = durationInSecs; }
+    inline void SetSlowmoLeverage( const float reductionFactor ) { SlowmoLeverage = reductionFactor; }
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -93,4 +98,22 @@ protected:
 
 	/** Damage value of the ball when it hits enemies */
 	int Damage;
+
+    bool SlowmoEnabled;
+
+    bool IsInSlowDown;
+
+    /** Slowdown duration (in seconds) */
+    float SlowmoDuration;
+
+    /** Stun time duration (in seconds) */
+    float SlowmoDelay;
+
+    float SlowmoLeverage;
+
+    FTimerHandle SlowDownTriggerTimerHandle;
+
+private:
+    UFUNCTION()
+    void TriggerSlowdown( AWQAIEnemy* touchedActor );
 };

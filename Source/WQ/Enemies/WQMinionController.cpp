@@ -28,8 +28,14 @@ AWQMinionController::AWQMinionController()
     BehaviorTree = btFinder.Object;
 
     BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>( TEXT( "BlackboardComponent" ) );
-
+    
     UBlackboardData* BlackboardAsset = bbData.Object;
+    /* UBlackboardData* BlackboardAssetCp = NewObject< UBlackboardData >( BlackboardComponent );
+     BlackboardAssetCp->UpdatePersistentKey<UObject>( FName( "MoveToActorKey" ) );
+     BlackboardAssetCp->UpdatePersistentKey<UObject>( FName( "SelfActor" ) );*/
+
+    //UBlackboardData* bbData2 = NewObject<UBlackboardData>( BlackboardComponent );
+    //*bbData2 = *( (UBlackboardData*)bbData.Object );
 
     InitializeBlackboard( *BlackboardComponent, *BlackboardAsset );
     BehaviorTree->BlackboardAsset = BlackboardComponent->GetBlackboardAsset();
@@ -54,7 +60,7 @@ AWQMinionController::AWQMinionController()
 
     // IMPORTANT : Set the perception component as this one, as the base AIController class has already one !
     // Add a listener to the Perception event, the function needs to be a UFUNCTION !
-    PerceptionComponent->OnPerceptionUpdated.AddDynamic( this, &AWQMinionController::OnActorInSight );
+    PerceptionComponent->OnPerceptionUpdated.AddUniqueDynamic( this, &AWQMinionController::OnActorInSight );
     
     SetPerceptionComponent( *PerceptionComponent );
 

@@ -102,6 +102,19 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	int BallDamage;
 
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    bool SlowmoEnabled;
+
+    /** Time duration during which the ball is bouncing and the player is stun (in secs) */
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float SlowmoDelay;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float SlowmoDuration;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float SlowmoLeverage;
+
 	/** Status of the time limit */
 	float CurrentProjectionTime;
 
