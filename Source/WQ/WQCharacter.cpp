@@ -45,8 +45,8 @@ AWQCharacter::AWQCharacter()
 		AddPhysicHandle(i);
 	}
 	HandlesUsed = 0;
-	NormalFootstepsInterval = 400.0f;
-	RunningFootstepsInterval = 400.0f;
+	NormalFootstepsInterval = 350.0f;
+	RunningFootstepsInterval = 350.0f;
 	FootstepsStatus = 0.0f;
 	bLastFootstepPlayed = true;
 }
@@ -91,8 +91,9 @@ void AWQCharacter::BeginPlay()
 void AWQCharacter::Tick(float DeltaTime)
 {
 	// Footsteps logic if the velocity is non null
-	if (GetVelocity().SizeSquared() != 0.0f)
+	if (GetVelocity().SizeSquared() != 0.0f && !bWasJumping)
 	{
+		bLastFootstepPlayed = false;
 		FootstepsStatus += (GetActorLocation() - LastLocation).Size();
 		UE_LOG(LogTemp, Log, TEXT("= a %f"), FootstepsStatus);
 		LastLocation = GetActorLocation();
@@ -114,7 +115,7 @@ void AWQCharacter::Tick(float DeltaTime)
 		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetGameInstance());
 		if (IsValid(WQGI))
 		{
-			WQGI->AudioManager()->PlayFootsteps(this);
+			WQGI->AudioManager()->PlayStop(this);
 		}
 	}
 }
@@ -218,8 +219,6 @@ void AWQCharacter::MoveForward(float Value)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
 		}
-
-		bLastFootstepPlayed = false;
 	}
 }
 
@@ -235,8 +234,6 @@ void AWQCharacter::MoveRight(float Value)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
 		}
-
-		bLastFootstepPlayed = false;
 	}
 }
 

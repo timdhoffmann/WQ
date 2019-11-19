@@ -23,6 +23,14 @@ public:
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Powers)
 	void SetPropMagnetizedAmbiance(bool bState, AActor* Target);
 
+	/** Sets the value of the magnetized ambiance RTPC */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Powers)
+	void SetRTPCMagnetizedAmbiance(AActor* Target, float Value);
+
+	/** Event called when the RTPC value starts decreasing */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Powers)
+	void MagnetizedRTPCStartsDecreasing(AActor* Target);
+
 	/** Set the global ambiance active or not */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Environment)
 	void SetEnvironmentAmbiance(bool bState);
@@ -34,6 +42,10 @@ public:
 	/** Sound event of footsteps */
 	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Character)
 	void PlayFootsteps(AActor* Target);
+
+	/** Sound event of stopping */
+	UFUNCTION(BlueprintImplementableEvent, BlueprintCallable, Category = Character)
+	void PlayStop(AActor* Target);
 
 protected:
 	/** Called when the game starts or when spawned */

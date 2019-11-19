@@ -13,6 +13,7 @@
 #include "MagnetIndicator.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
+#include "Math/UnrealMathUtility.h" 
 
 /** Sets default values for this component's properties */
 UMagnetPower::UMagnetPower()
@@ -30,6 +31,10 @@ UMagnetPower::UMagnetPower()
 	PropulsionForce = 500000.0f;
 	MagnetizationRadiusCoeff = 0.8f;
 	Identifier = 0;
+	MinMagnetizedSpeed = 1000.0f;
+	MaxMagnetizedSpeed = 5000.0f;
+	PreviousSlope = 0.0f;
+	PreviousRTPCValue = 0.0f;
 
 	/// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
@@ -74,6 +79,8 @@ void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	if (bIsTargettingActivated)
 	{
 		UpdateMagnet();
+
+		UpdateMagnetRTPC();
 	}
 }
 
@@ -185,6 +192,34 @@ void UMagnetPower::UpdateMagnet()
 					WQGI->AudioManager()->SetPropMagnetizedAmbiance(true, Prop);
 				}
 			}
+		}
+	}
+}
+
+/** Update the audio RTPC of the magnetized props */
+void UMagnetPower::UpdateMagnetRTPC()
+{
+	// Get the game instance for playing the sounds
+	UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
+
+	if (IsValid((WQGI)))
+	{
+		for (AProps* Prop : MagnetizedProps)
+		{
+			// Calculate the new RTPC value and slope
+			float NewRTPCValue = FMath::Clamp((Prop->GetVelocity().Size() - MinMagnetizedSpeed) / (MaxMagnetizedSpeed - MinMagnetizedSpeed), 0.f, 1.f);
+			float NewSlope = NewRTPCValue - PreviousRTPCValue;
+
+			// Check if we have a change of slope and need to call the event
+			if (NewRTPCValue > 0.0f && NewSlope < 0.0f && PreviousSlope > 0.0f)
+			{
+				WQGI->AudioManager()->MagnetizedRTPCStartsDecreasing(Prop);
+			}
+			PreviousSlope = NewSlope;
+			PreviousRTPCValue = NewRTPCValue;
+
+			// Change the RTPC value
+			WQGI->AudioManager()->SetRTPCMagnetizedAmbiance(Prop, NewRTPCValue);
 		}
 	}
 }
