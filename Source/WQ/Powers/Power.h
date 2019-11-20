@@ -2,6 +2,7 @@
 
 #pragma once
 
+class UWQGameInstance;
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Power.generated.h"
@@ -47,4 +48,7 @@ protected:
 
 	/** Identifier to see in which position the power is */
 	int Identifier;
+
+	/** Game instance pointer */
+	UWQGameInstance* GameInstance;
 };

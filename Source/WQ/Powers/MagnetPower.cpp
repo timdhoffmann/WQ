@@ -106,9 +106,6 @@ void UMagnetPower::PowerReleased()
 
 		Character->ClearAllPhysicHandle();
 
-		// Get the game instance for stopping the sounds
-		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
-
 		for (AProps* Prop : MagnetizedProps)
 		{
 			if (Prop != nullptr)
@@ -118,9 +115,9 @@ void UMagnetPower::PowerReleased()
 				Prop->SetMaterial(Mat1);
 
 				// Stop the ambiance sound
-				if (IsValid(WQGI))
+				if (IsValid(GameInstance))
 				{
-					WQGI->AudioManager()->SetPropMagnetizedAmbiance(false, Prop);
+					GameInstance->AudioManager()->SetPropMagnetizedAmbiance(false, Prop);
 				}
 			}
 		}
@@ -166,9 +163,6 @@ void UMagnetPower::UpdateMagnet()
 	TArray<FOverlapResult> OutProps;
 	if (World->OverlapMultiByChannel(OutProps, FinalLocation, FQuat::Identity, ECollisionChannel::ECC_GameTraceChannel3, BiggerSphere, SweepParams))
 	{
-		// Get the game instance for playing the sounds
-		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
-
 		for (FOverlapResult Res : OutProps)
 		{
 			AProps* Prop = Cast<AProps>(Res.Actor);
@@ -186,10 +180,10 @@ void UMagnetPower::UpdateMagnet()
 				Prop->SetMaterial(Mat2);
 
 				// Play the required sound
-				if (IsValid(WQGI))
+				if (IsValid(GameInstance))
 				{
-					WQGI->AudioManager()->PlayPropMagnetized(Prop);
-					WQGI->AudioManager()->SetPropMagnetizedAmbiance(true, Prop);
+					GameInstance->AudioManager()->PlayPropMagnetized(Prop);
+					GameInstance->AudioManager()->SetPropMagnetizedAmbiance(true, Prop);
 				}
 			}
 		}
@@ -199,10 +193,7 @@ void UMagnetPower::UpdateMagnet()
 /** Update the audio RTPC of the magnetized props */
 void UMagnetPower::UpdateMagnetRTPC()
 {
-	// Get the game instance for playing the sounds
-	UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
-
-	if (IsValid((WQGI)))
+	if (IsValid((GameInstance)))
 	{
 		for (AProps* Prop : MagnetizedProps)
 		{
@@ -213,13 +204,13 @@ void UMagnetPower::UpdateMagnetRTPC()
 			// Check if we have a change of slope and need to call the event
 			if (NewRTPCValue > 0.0f && NewSlope < 0.0f && PreviousSlope > 0.0f)
 			{
-				WQGI->AudioManager()->MagnetizedRTPCStartsDecreasing(Prop);
+				GameInstance->AudioManager()->MagnetizedRTPCStartsDecreasing(Prop);
 			}
 			PreviousSlope = NewSlope;
 			PreviousRTPCValue = NewRTPCValue;
 
 			// Change the RTPC value
-			WQGI->AudioManager()->SetRTPCMagnetizedAmbiance(Prop, NewRTPCValue);
+			GameInstance->AudioManager()->SetRTPCMagnetizedAmbiance(Prop, NewRTPCValue);
 		}
 	}
 }
