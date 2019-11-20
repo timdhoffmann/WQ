@@ -49,6 +49,8 @@ protected:
 	/** Update the ball targetting when the ball is thrown */
 	bool UpdateBallTargetting();
 
+    void UpdateAuraLogic();
+
 	/** Function called on telekinesis finished */
 	UFUNCTION()
 	void OnTelekinesisFinished();
@@ -115,6 +117,27 @@ protected:
     UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
     float SlowmoLeverage;
 
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    bool AuraEnabled;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float AuraRadius;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float AuraLevitationForce;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float AuraLevitationTime;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float AuraLevitationMaxHeight;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float AuraLevitationMinHeight;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    float AuraLevitationAmplitude;
+
 	/** Status of the time limit */
 	float CurrentProjectionTime;
 
@@ -122,4 +145,7 @@ protected:
 	FCollisionShape Sphere;
 	FCollisionQueryParams SweepParams;
 	FCollisionQueryParams TelekinesisSweepParams;
+
+    FCollisionShape AuraSphere;
+    FCollisionQueryParams AuraSweepParams;
 };
