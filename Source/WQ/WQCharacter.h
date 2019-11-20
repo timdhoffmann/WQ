@@ -23,8 +23,8 @@ class AWQCharacter : public ACharacter
 public:
 	AWQCharacter();
 
-	/** Returns Mesh1P subobject **/
-	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	///** Returns Mesh1P subobject **/
+	//FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
@@ -107,13 +107,9 @@ protected:
 	void AddPhysicHandle(int Index, bool bIsRuntime = false);
 
 protected:
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-	class USkeletalMeshComponent* Mesh1P;
-
-	/** Gun mesh: 1st person view (seen only by self) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-	class USkeletalMeshComponent* FP_Gun;
+	///** Pawn mesh: 1st person view (arms; seen only by self) */
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
+	//class USkeletalMeshComponent* Mesh1P;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)

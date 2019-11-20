@@ -66,11 +66,8 @@ void AWQCharacter::BeginPlay()
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Sight::StaticClass(), this );
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Hearing::StaticClass(), this );
 
-	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-
-	// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
-	Mesh1P->SetHiddenInGame(false, true);
+	//// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
+	//Mesh1P->SetHiddenInGame(false, true);
 
 	// Get all the powers attached and sort them by identifier
 	GetComponents<UPower>(Powers);
@@ -110,7 +107,10 @@ void AWQCharacter::BeginPlay()
 
 	// Setup the initial FOV needs
 	InititialFOV = GetFirstPersonCameraComponent()->FieldOfView;
-	FOVMultiplierCurve->GetTimeRange(MinTimeFOV, MaxTimeFOV);
+	if (IsValid(FOVMultiplierCurve))
+	{
+		FOVMultiplierCurve->GetTimeRange(MinTimeFOV, MaxTimeFOV);
+	}
 }
 
 void AWQCharacter::Tick(float DeltaTime)
