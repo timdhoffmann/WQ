@@ -46,9 +46,6 @@ protected:
 	/** Called when the game starts or when spawned */
 	virtual void        BeginPlay() override;
 
-    UFUNCTION( BlueprintImplementableEvent )
-    void                ReceivedDamage();
-
 protected:
 	/** Initial health */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = AI)

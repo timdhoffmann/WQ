@@ -49,8 +49,6 @@ void AWQAICharacter::ApplyDamage(const int Damage)
 {
 	HealthPoints -= Damage;
     
-    this->ReceivedDamage();
-
 	if (HealthPoints <= 0)
 	{
 		// TODO: Death logic
