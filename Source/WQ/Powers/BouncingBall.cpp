@@ -24,6 +24,8 @@ ABouncingBall::ABouncingBall()
 	CurrentScalingSpeed = 0.0f;
 	Damage = 1;
 
+    isCacac = false;
+
     SlowmoEnabled = true;
     IsInSlowDown = false;
     SlowmoDuration = 1.0f;
@@ -207,8 +209,10 @@ void ABouncingBall::ResetBall()
 void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
 {
 	AWQAIEnemy* Enemy = Cast<AWQAIEnemy>(OtherActor);
-	if (Enemy != nullptr)
+	if (Enemy != nullptr && !isCacac)
 	{
+        //BallMesh->SetNotifyRigidBodyCollision( false );
+
         Enemy->ApplyDamage( Damage );
 
         UCharacterMovementComponent* characterMovement = Enemy->GetCharacterMovement();
@@ -217,7 +221,19 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
         FTimerDelegate TimerDel;
         TimerDel.BindUFunction( this, FName( "TriggerSlowdown" ), Enemy );
 
+        isCacac = true;
+
         if ( SlowmoEnabled ) {
+            velocityBackup = BallMesh->GetPhysicsLinearVelocity();
+            
+            UE_LOG( LogTemp, Error, TEXT( "%f %f %f" ), velocityBackup.X, velocityBackup.Y, velocityBackup.Z );
+
+            SetPhysicSimulation( false );
+            SetPhysicSimulation( true );
+
+            SetGravitySimulation( false );
+            BallMesh->SetPhysicsLinearVelocity( velocityBackup * 0.0000001f );
+
             GetWorld()->GetTimerManager().SetTimer( SlowDownTriggerTimerHandle, TimerDel, SlowmoDelay, false );
         }
 	}
@@ -228,11 +244,14 @@ void ABouncingBall::TriggerSlowdown( AWQAIEnemy* touchedActor )
     // Apply bullet time thingy
     if ( IsInSlowDown ) {
         touchedActor->SetTimeDilation( 1.0f );
-        this->CustomTimeDilation = 1.0f;
+
+        BallMesh->SetPhysicsLinearVelocity( velocityBackup );
+        SetGravitySimulation( true );
+
+        isCacac = false;
     } else {
         touchedActor->SetTimeDilation( SlowmoLeverage );
-        this->CustomTimeDilation = SlowmoLeverage;
-
+        
         FTimerDelegate TimerDel;
         TimerDel.BindUFunction( this, FName( "TriggerSlowdown" ), touchedActor );
         GetWorld()->GetTimerManager().SetTimer( SlowDownTriggerTimerHandle, TimerDel, SlowmoDuration, false );

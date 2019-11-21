@@ -31,6 +31,14 @@ UBouncingPower::UBouncingPower()
     SlowmoDuration = 1.0f;
     SlowmoLeverage = 0.1f;
 
+    AuraEnabled = true;
+    AuraRadius = 100.0f;
+    AuraLevitationForce = 10.0f;
+    AuraLevitationTime = 3.0f;
+    AuraLevitationMaxHeight = 10.0f;
+    AuraLevitationMinHeight = 5.0f;
+    AuraLevitationAmplitude = 2.0f;
+
 	// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> BouncingBallClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_BouncingBall.BP_BouncingBall_C'"));
 	if (BouncingBallClassFinder.Object)
@@ -74,6 +82,10 @@ void UBouncingPower::BeginPlay()
 	TelekinesisSweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 	if (BouncingBall)
 		SweepParams.AddIgnoredActor(BouncingBall); // Ignore the ball only for the sphere
+
+    AuraSphere = FCollisionShape::MakeSphere( AuraRadius );
+    AuraSweepParams = FCollisionQueryParams();
+    AuraSweepParams.AddIgnoredActor( Character );
 
 	// Initialize the CurrentProjectionTime
 	CurrentProjectionTime = 0.0f;
@@ -119,6 +131,10 @@ void UBouncingPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorC
 		// Logic for getting the ball back
 		UpdateBallTargetting();
 	}
+    else if ( BounceState == EBounceEnum::BE_BallReady )
+    {
+        UpdateAuraLogic();
+    }
 }
 
 /** Behaviour when the power is pressed */
@@ -207,6 +223,32 @@ bool UBouncingPower::UpdateBallTargetting()
 
 	// TODO: Reset HUD
 	return false;
+}
+
+void UBouncingPower::UpdateAuraLogic()
+{
+    // Do an initial sphere sweep with only the ball trace channel
+    UWorld* const World = GetWorld();
+    FHitResult Hit( 1.f );
+    FVector Start = UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
+    FVector End = Start + AuraRadius * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
+    World->SweepSingleByChannel( Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams );
+
+    // If hit, then check that there is no environment between the player and the ball
+    FVector FinalLocation;
+    if ( Hit.IsValidBlockingHit() ) {
+        FVector FinalLocation = Hit.Location;
+        DrawDebugSphere( World, FinalLocation, AuraRadius, 32, FColor::White );
+
+        // Raycast to the environment to check that there is nothing blocking
+        Hit.Reset( 1.f, false );
+        World->LineTraceSingleByChannel( Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams );
+        FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
+
+        if ( FVector::DistSquared( Character->GetActorLocation(), FinalLocation ) <= FVector::DistSquared( Character->GetActorLocation(), BlockingLocation ) ) {
+            Hit.Actor->SetActorHiddenInGame( true );
+        }
+    }
 }
 
 /** Function called on telekinesis finished */

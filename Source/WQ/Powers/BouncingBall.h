@@ -102,7 +102,7 @@ protected:
     bool SlowmoEnabled;
 
     bool IsInSlowDown;
-
+    bool isCacac;
     /** Slowdown duration (in seconds) */
     float SlowmoDuration;
 
@@ -112,6 +112,8 @@ protected:
     float SlowmoLeverage;
 
     FTimerHandle SlowDownTriggerTimerHandle;
+
+    FVector velocityBackup;
 
 private:
     UFUNCTION()
