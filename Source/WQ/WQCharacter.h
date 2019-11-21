@@ -6,6 +6,9 @@
 #include "GameFramework/Character.h"
 #include "WQCharacter.generated.h"
 class UInputComponent;
+class UWQGameInstance;
+class UCameraShake;
+class UCurveFloat;
 
 DECLARE_EVENT(AWQCharacter, FPowerPressed)
 DECLARE_EVENT(AWQCharacter, FPowerReleased)
@@ -20,8 +23,8 @@ class AWQCharacter : public ACharacter
 public:
 	AWQCharacter();
 
-	/** Returns Mesh1P subobject **/
-	FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
+	///** Returns Mesh1P subobject **/
+	//FORCEINLINE class USkeletalMeshComponent* GetMesh1P() const { return Mesh1P; }
 
 	/** Returns FirstPersonCameraComponent subobject **/
 	FORCEINLINE class UCameraComponent* GetFirstPersonCameraComponent() const { return FirstPersonCameraComponent; }
@@ -57,6 +60,9 @@ protected:
 
 	/** Handles stafing movement, left and right */
 	void MoveRight(float Val);
+
+	/** Handles player running */
+	void Run();
 
 	/**
 	 * Called via input to turn at a given rate.
@@ -101,13 +107,9 @@ protected:
 	void AddPhysicHandle(int Index, bool bIsRuntime = false);
 
 protected:
-	/** Pawn mesh: 1st person view (arms; seen only by self) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-	class USkeletalMeshComponent* Mesh1P;
-
-	/** Gun mesh: 1st person view (seen only by self) */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-	class USkeletalMeshComponent* FP_Gun;
+	///** Pawn mesh: 1st person view (arms; seen only by self) */
+	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
+	//class USkeletalMeshComponent* Mesh1P;
 
 	/** Location on gun mesh where projectiles should spawn. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
@@ -129,17 +131,18 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	FVector GunOffset;
 
-	/** Sound to play each time we fire */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
-	class USoundBase* FireSound;
-
 	/** AnimMontage to play each time we fire */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
-	/** HeadBob shake blueprint */
+	/** HeadBob shake blueprints */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
-	TSubclassOf<class UCameraShake> HeadbobShake;
+	TSubclassOf<UCameraShake> WalkingHeadbobShake;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
+	TSubclassOf<UCameraShake> RunningHeadbobShake;
+
+	/** Current headbob shake pointer */
+	TSubclassOf<UCameraShake> HeadbobShake;
 
 	/** Normal footsteps interval in distance (cm) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Footsteps)
@@ -148,6 +151,34 @@ protected:
 	/** Running footsteps interval in distance (cm) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Footsteps)
 	float RunningFootstepsInterval;
+
+	/** Walking speed */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	float WalkingSpeed;
+
+	/** Walking acceleration */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	float WalkingAcceleration;
+
+	/** Running speed when shift is pressed */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	float RunningSpeed;
+
+	/** Walking acceleration */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Movement)
+	float RunningAcceleration;
+
+	/** FOV change curve during running */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Blink)
+	UCurveFloat* FOVMultiplierCurve;
+
+	/** Initial FOV value */
+	float InititialFOV;
+
+	/** Used to track the status of the FOV change during running */
+	float ElapsedFOV;
+	float MinTimeFOV;
+	float MaxTimeFOV;
 
 	/** Current status of the footsteps interval */
 	float CurrentFootstepsInterval;
@@ -190,5 +221,11 @@ protected:
 
 	/** Index of the current power */
 	int PowerIndex;
+
+	/** Game instance pointer */
+	UWQGameInstance* GameInstance;
+
+	/** Tracks the running status */
+	bool bIsRunning;
 };
 

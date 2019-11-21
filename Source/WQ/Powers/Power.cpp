@@ -3,6 +3,7 @@
 
 #include "Power.h"
 #include "WQCharacter.h"
+#include "Managers/WQGameInstance.h"
 
 /** Sets default values for this component's properties */
 UPower::UPower()
@@ -20,10 +21,18 @@ void UPower::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Initialize the Character ref
 	Character = Cast<AWQCharacter>(GetOwner());
 	if (Character == nullptr)
 	{
-		UE_LOG(LogTemp, Error, TEXT("POWER: Character not found!"));
+		UE_LOG(LogTemp, Error, TEXT("Power: Character not found!"));
+	}
+
+	// Initialize the Game Instance ref
+	GameInstance = Cast<UWQGameInstance>(GetWorld()->GetGameInstance());
+	if (!IsValid(GameInstance))
+	{
+		UE_LOG(LogTemp, Error, TEXT("Power: GameInstance not found!"));
 	}
 }
 

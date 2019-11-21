@@ -35,6 +35,9 @@ protected:
 	/** Update the magnet (target, objects in it...) */
 	void UpdateMagnet();
 
+	/** Update the audio RTPC of the magnetized props */
+	void UpdateMagnetRTPC();
+
 protected:
 	/** Range of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
@@ -63,6 +66,18 @@ protected:
 	/** Blueprint class of the indicator */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
 	TSubclassOf<class AMagnetIndicator> MagnetIndicatorBP;
+
+	/** Min speed for the RTPC ambiance values (speed value at which the RTPC is set to 0) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float MinMagnetizedSpeed;
+
+	/** Max speed for the RTPC ambiance values (speed value at which the RTPC is set to 1) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
+	float MaxMagnetizedSpeed;
+
+	/** Used to track the change of RTPC acceleration (if it increases or decreases) */
+	float PreviousRTPCValue;
+	float PreviousSlope;
 
 	/** Reference to the indicator that will be spawned */
 	UPROPERTY()

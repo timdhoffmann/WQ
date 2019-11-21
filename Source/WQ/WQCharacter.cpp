@@ -17,6 +17,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Powers/Power.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 #include "Runtime/AIModule/Classes/Perception/AIPerceptionComponent.h"
 #include "Runtime/AIModule/Classes/Perception/AISense_Sight.h"
@@ -45,10 +46,16 @@ AWQCharacter::AWQCharacter()
 		AddPhysicHandle(i);
 	}
 	HandlesUsed = 0;
-	NormalFootstepsInterval = 400.0f;
-	RunningFootstepsInterval = 400.0f;
+	NormalFootstepsInterval = 350.0f;
+	RunningFootstepsInterval = 350.0f;
 	FootstepsStatus = 0.0f;
 	bLastFootstepPlayed = true;
+	bIsRunning = false;
+	WalkingSpeed = 600.0f;
+	WalkingAcceleration = 2048.0f;
+	RunningSpeed = 1200.0f;
+	RunningAcceleration = 5096.0f;
+	ElapsedFOV = 0.0f;
 }
 
 void AWQCharacter::BeginPlay()
@@ -59,11 +66,8 @@ void AWQCharacter::BeginPlay()
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Sight::StaticClass(), this );
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Hearing::StaticClass(), this );
 
-	//Attach gun mesh component to Skeleton, doing it here because the skeleton is not yet created in the constructor
-	FP_Gun->AttachToComponent(Mesh1P, FAttachmentTransformRules(EAttachmentRule::SnapToTarget, true), TEXT("GripPoint"));
-
-	// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
-	Mesh1P->SetHiddenInGame(false, true);
+	//// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
+	//Mesh1P->SetHiddenInGame(false, true);
 
 	// Get all the powers attached and sort them by identifier
 	GetComponents<UPower>(Powers);
@@ -86,36 +90,82 @@ void AWQCharacter::BeginPlay()
 	// Initialize the footsteps variables
 	LastLocation = GetActorLocation();
 	CurrentFootstepsInterval = NormalFootstepsInterval;
+
+	// Initialize the Game Instance
+	GameInstance = Cast<UWQGameInstance>(GetGameInstance());
+	if (!IsValid(GameInstance))
+	{
+		UE_LOG(LogTemp, Error, TEXT("WQCharacter: GameInstance not found!"));
+	}
+
+	// Initialize the walking speed
+	GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
+	GetCharacterMovement()->MaxAcceleration = WalkingAcceleration;
+
+	// Intialize the Headbob
+	HeadbobShake = WalkingHeadbobShake;
+
+	// Setup the initial FOV needs
+	InititialFOV = GetFirstPersonCameraComponent()->FieldOfView;
+	if (IsValid(FOVMultiplierCurve))
+	{
+		FOVMultiplierCurve->GetTimeRange(MinTimeFOV, MaxTimeFOV);
+	}
 }
 
 void AWQCharacter::Tick(float DeltaTime)
 {
-	// Footsteps logic if the velocity is non null
-	if (GetVelocity().SizeSquared() != 0.0f)
+	if (GetVelocity().SizeSquared() != 0.0f) // If we are moving
 	{
-		FootstepsStatus += (GetActorLocation() - LastLocation).Size();
-		UE_LOG(LogTemp, Log, TEXT("= a %f"), FootstepsStatus);
-		LastLocation = GetActorLocation();
-
-		if (FootstepsStatus >= CurrentFootstepsInterval)
+		// Running FOV change logic
+		if (bIsRunning)
 		{
-			FootstepsStatus = 0.0f;
-			UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetGameInstance());
-			if (IsValid(WQGI))
+			ElapsedFOV += DeltaTime;
+			ElapsedFOV = FMath::Min(ElapsedFOV, MaxTimeFOV);
+		}
+		else
+		{
+			ElapsedFOV -= DeltaTime;
+			ElapsedFOV = FMath::Max(ElapsedFOV, MinTimeFOV);
+		}
+
+		// Continue the logic for playing footsteps
+		if (!bWasJumping)
+		{
+			bLastFootstepPlayed = false;
+			FootstepsStatus += (GetActorLocation() - LastLocation).Size();
+			LastLocation = GetActorLocation();
+			if (FootstepsStatus >= CurrentFootstepsInterval)
 			{
-				WQGI->AudioManager()->PlayFootsteps(this);
+				FootstepsStatus = 0.0f;
+				if (IsValid(GameInstance))
+				{
+					GameInstance->AudioManager()->PlayFootsteps(this);
+				}
 			}
 		}
 	}
-	else if (!bLastFootstepPlayed)
+	else // Else if we are not moving
 	{
-		bLastFootstepPlayed = true;
-		FootstepsStatus = 0.0f;
-		UWQGameInstance* WQGI = Cast<UWQGameInstance>(GetGameInstance());
-		if (IsValid(WQGI))
+		if (!bLastFootstepPlayed)
 		{
-			WQGI->AudioManager()->PlayFootsteps(this);
+			bLastFootstepPlayed = true;
+			FootstepsStatus = 0.0f;
+			if (IsValid(GameInstance))
+			{
+				GameInstance->AudioManager()->PlayStop(this);
+			}
 		}
+
+		// Still change the FOV back to the walking one if we are stopped
+		ElapsedFOV -= DeltaTime;
+		ElapsedFOV = FMath::Max(ElapsedFOV, MinTimeFOV);
+	}
+
+	// Update the FOV
+	if (IsValid(FOVMultiplierCurve))
+	{
+		GetFirstPersonCameraComponent()->SetFieldOfView(FOVMultiplierCurve->GetFloatValue(ElapsedFOV) * InititialFOV);
 	}
 }
 
@@ -134,6 +184,8 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	// Bind movement events
 	PlayerInputComponent->BindAxis("MoveForward", this, &AWQCharacter::MoveForward);
 	PlayerInputComponent->BindAxis("MoveRight", this, &AWQCharacter::MoveRight);
+	PlayerInputComponent->BindAction("Run", IE_Pressed, this, &AWQCharacter::Run);
+	PlayerInputComponent->BindAction("Run", IE_Released, this, &AWQCharacter::Run);
 
 	// We have 2 versions of the rotation bindings to handle different kinds of devices differently
 	// "turn" handles devices that provide an absolute delta, such as a mouse.
@@ -202,8 +254,11 @@ void AWQCharacter::SwitchPowerDown()
 /** Pause behaviour */
 void AWQCharacter::PauseTriggered()
 {
-    UE_LOG( LogTemp, Log, TEXT( "Pause has been triggered" ) )
-    reinterpret_cast< UWQGameInstance* >( GetGameInstance() )->PauseManager()->ShowHidePauseMenu();
+	UE_LOG(LogTemp, Log, TEXT("Pause has been triggered"));
+	if (IsValid(GameInstance))
+	{
+		GameInstance->PauseManager()->ShowHidePauseMenu();
+	}
 }
 
 void AWQCharacter::MoveForward(float Value)
@@ -216,10 +271,8 @@ void AWQCharacter::MoveForward(float Value)
 		// Try and play the headbob if specified
 		if (HeadbobShake != nullptr)
 		{
-			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
-
-		bLastFootstepPlayed = false;
 	}
 }
 
@@ -233,10 +286,27 @@ void AWQCharacter::MoveRight(float Value)
 		// Try and play the headbob if specified
 		if (HeadbobShake != nullptr)
 		{
-			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, FMath::Abs(Value));
+			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
+	}
+}
 
-		bLastFootstepPlayed = false;
+/** Handles player run */
+void AWQCharacter::Run()
+{
+	if (bIsRunning)
+	{
+		bIsRunning = false;
+		GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
+		GetCharacterMovement()->MaxAcceleration = WalkingAcceleration;
+		HeadbobShake = WalkingHeadbobShake;
+	}
+	else
+	{
+		bIsRunning = true;
+		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+		GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
+		HeadbobShake = RunningHeadbobShake;
 	}
 }
 
