@@ -56,6 +56,7 @@ AWQCharacter::AWQCharacter()
 	RunningSpeed = 1200.0f;
 	RunningAcceleration = 5096.0f;
 	ElapsedFOV = 0.0f;
+	bShouldRunInputBeConsumed = false;
 }
 
 void AWQCharacter::BeginPlay()
@@ -115,6 +116,15 @@ void AWQCharacter::BeginPlay()
 
 void AWQCharacter::Tick(float DeltaTime)
 {
+	// Consume the run input if needed
+	if (bShouldRunInputBeConsumed && !bWasJumping)
+	{
+		bIsRunning = true;
+		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+		GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
+		HeadbobShake = RunningHeadbobShake;
+	}
+
 	if (GetVelocity().SizeSquared() != 0.0f) // If we are moving
 	{
 		// Running FOV change logic
@@ -203,6 +213,10 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::FirePressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AWQCharacter::FireReleased);
 
+	// Bind summon event
+	PlayerInputComponent->BindAction("Summon", IE_Pressed, this, &AWQCharacter::SummonPressed);
+	PlayerInputComponent->BindAction("Summon", IE_Released, this, &AWQCharacter::SummonReleased);
+
     // Bind misc event
     PlayerInputComponent->BindAction( "Pause", IE_Pressed, this, &AWQCharacter::PauseTriggered ).bExecuteWhenPaused = true;
 
@@ -233,6 +247,18 @@ void AWQCharacter::FirePressed()
 void AWQCharacter::FireReleased()
 {
 	FireReleasedEvent.Broadcast();
+}
+
+/** Summon pressed, called by the input */
+void AWQCharacter::SummonPressed()
+{
+	SummonPressedEvent.Broadcast();
+}
+
+/** Summon released, called by the input */
+void AWQCharacter::SummonReleased()
+{
+	SummonReleasedEvent.Broadcast();
 }
 
 /** Switching power with the mouse wheel up, called by the input */
@@ -296,6 +322,7 @@ void AWQCharacter::Run()
 {
 	if (bIsRunning)
 	{
+		bShouldRunInputBeConsumed = false;
 		bIsRunning = false;
 		GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
 		GetCharacterMovement()->MaxAcceleration = WalkingAcceleration;
@@ -303,10 +330,18 @@ void AWQCharacter::Run()
 	}
 	else
 	{
-		bIsRunning = true;
-		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
-		GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
-		HeadbobShake = RunningHeadbobShake;
+		if (bWasJumping)
+		{
+			bShouldRunInputBeConsumed = true;
+		}
+		else
+		{
+			bShouldRunInputBeConsumed = false;
+			bIsRunning = true;
+			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+			GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
+			HeadbobShake = RunningHeadbobShake;
+		}
 	}
 }
 

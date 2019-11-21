@@ -27,7 +27,6 @@ UMagnetPower::UMagnetPower()
 	SphereRadius = 20.0f;
 	MagnetRadius = 60.0f;
 	MagnetForce = 100000.0f;
-	bIsTargettingActivated = false;
 	PropulsionForce = 500000.0f;
 	MagnetizationRadiusCoeff = 0.8f;
 	Identifier = 0;
@@ -35,6 +34,11 @@ UMagnetPower::UMagnetPower()
 	MaxMagnetizedSpeed = 5000.0f;
 	PreviousSlope = 0.0f;
 	PreviousRTPCValue = 0.0f;
+	MinPropsAmountToSummon = 4;
+	GlowMultiplier = 10.0f;
+	DeniedSummonColor = FLinearColor::Red;
+	DeniedSummonGlowDuration = 0.3f;
+	DeniedSummonGlowMultiplier = 200.0f;
 
 	/// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
@@ -76,7 +80,7 @@ void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bIsTargettingActivated)
+	if (MagnetState != EMagnetEnum::ME_None)
 	{
 		UpdateMagnet();
 
@@ -84,15 +88,40 @@ void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	}
 }
 
+/** Behaviour when the power is activated */
+void UMagnetPower::SetPowerActive(bool bState)
+{
+	if (bState)
+	{
+		// Subscribe to the correct events
+		Character->OnPowerPressed().AddUFunction(this, TEXT("PowerPressed"));
+		Character->OnPowerReleased().AddUFunction(this, TEXT("PowerReleased"));
+		Character->OnSummonPressed().AddUFunction(this, TEXT("SummonPressed"));
+		Character->OnSummonReleased().AddUFunction(this, TEXT("SummonReleased"));
+		MagnetState = EMagnetEnum::ME_None;
+	}
+	else
+	{
+		// Unsubscribe
+		Character->OnPowerPressed().RemoveAll(this);
+		Character->OnPowerReleased().RemoveAll(this);
+		Character->OnSummonPressed().RemoveAll(this);
+		Character->OnSummonReleased().RemoveAll(this);
+		MagnetState = EMagnetEnum::ME_None;
+	}
+}
+
 /** Behaviour when the power is pressed */
 void UMagnetPower::PowerPressed()
 {
-	// Activate the power only if it's not already activated or if the objects are not being dragged towards the player
-	if (!bIsTargettingActivated)
+	// Activate the power only if it's not already activated
+	if (MagnetState == EMagnetEnum::ME_None)
 	{
-		bIsTargettingActivated = true;
+		MagnetState = EMagnetEnum::ME_Targetting;
 		if (MagnetIndicator)
+		{
 			MagnetIndicator->SetActorActive(true);
+		}
 	}
 }
 
@@ -100,19 +129,21 @@ void UMagnetPower::PowerPressed()
 void UMagnetPower::PowerReleased()
 {
 	// Deactivate the power only if it's already activated
-	if (bIsTargettingActivated)
+	if (MagnetState != EMagnetEnum::ME_None)
 	{
-		bIsTargettingActivated = false;
+		MagnetState = EMagnetEnum::ME_None;
 
 		Character->ClearAllPhysicHandle();
 
 		for (AProps* Prop : MagnetizedProps)
 		{
-			if (Prop != nullptr)
+			if (IsValid(Prop))
 			{
 				Prop->FlyStop();
-				Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
-				Prop->SetMaterial(Mat1);
+				//Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
+				
+				// Make the prop unglow
+				Prop->SetGlow(0.0f);
 
 				// Stop the ambiance sound
 				if (IsValid(GameInstance))
@@ -127,6 +158,33 @@ void UMagnetPower::PowerReleased()
 			MagnetIndicator->SetActorActive(false);
 		}
 	}
+}
+
+/** Behaviour when the summon action is pressed */
+void UMagnetPower::SummonPressed()
+{
+	// Only launch the summoning if we have enough props
+	if (MagnetState == EMagnetEnum::ME_Targetting && MagnetizedProps.Num() >= MinPropsAmountToSummon)
+	{
+
+	}
+	// Otherwise, make the objects glow red
+	else
+	{
+		for (AProps* Prop : MagnetizedProps)
+		{
+			if (IsValid(Prop))
+			{
+				Prop->SetGlow(DeniedSummonGlowMultiplier, DeniedSummonGlowDuration, DeniedSummonColor, true);
+			}
+		}
+	}
+}
+
+/** Behaviour when the summon action is released */
+void UMagnetPower::SummonReleased()
+{
+
 }
 
 /** Update the magnet (target, objects in it...) */
@@ -177,7 +235,9 @@ void UMagnetPower::UpdateMagnet()
 				PH->GrabComponentAtLocation(PrimComps[0], FName("", MagnetizedProps.Num()), GrabLocation);
 				Prop->FlyTowards(FinalLocation, MagnetForce);
 				MagnetizedProps.Add(Prop);
-				Prop->SetMaterial(Mat2);
+
+				// Make the prop glow
+				Prop->SetGlow(GlowMultiplier);
 
 				// Play the required sound
 				if (IsValid(GameInstance))
