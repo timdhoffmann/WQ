@@ -195,6 +195,10 @@ void UMagnetPower::SummonReleased()
 	if (MagnetState == EMagnetEnum::ME_Summoning)
 	{
 		// Check if we can summon
+		if (UpdateSummonTargetting())
+		{
+			// TODO: Summoning logic
+		}
 	}
 }
 
@@ -318,38 +322,16 @@ bool UMagnetPower::UpdateSummonTargetting()
 
 		//DrawDebugBoxTraceMulti(World, StartSummonSweep, StartSummonSweep + FVector::UpVector, SummonCheckboxExtent / 2.0f, LookAtRotator, EDrawDebugTrace::ForOneFrame, true, SummonHits, FLinearColor::Blue, FLinearColor::Red, 0.0f);
 		//if (World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector * 0.1f, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams ))
-		if (World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams))
+		// If we hit nothing
+		if (!World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams))
 		{
-			UE_LOG(LogTemp, Error, TEXT("HIT NUMBER: %i"), SummonHits.Num());
-			SummonLocation = SummonHits[0].Location;
-		}
-		else
-		{
-			SummonLocation = StartSummonSweep;
+			// TODO: Place VFX Green area of spawning
+			return true;
 		}
 		
-		DrawDebugBox(World, SummonLocation, SummonCheckboxExtent, LookAtRotator.Quaternion(), FColor::Orange);
+		//DrawDebugBox(World, SummonLocation, SummonCheckboxExtent, LookAtRotator.Quaternion(), FColor::Orange);
 		//DrawDebugCapsule(World, SummonLocation, 50.0f, 100.0f, LookAtRotator.Quaternion(), FColor::Orange);
 	}
-
-	//// If hit, then check that there is no environment between the player and the ball
-	//FVector FinalLocation;
-	//if (Hit.IsValidBlockingHit())
-	//{
-	//	FVector FinalLocation = Hit.Location;
-	//	DrawDebugSphere(World, FinalLocation, TelekinesisRadius, 32, FColor::White);
-
-	//	// Raycast to the environment to check that there is nothing blocking
-	//	Hit.Reset(1.f, false);
-	//	World->LineTraceSingleByChannel(Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams);
-	//	FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
-
-	//	if (FVector::DistSquared(Character->GetActorLocation(), FinalLocation) <= FVector::DistSquared(Character->GetActorLocation(), BlockingLocation))
-	//	{
-	//		// TODO: Change HUD + Ball Highlight?
-	//		return true;
-	//	}
-	//}
 
 	// TODO: Change VFX area to red
 	return false;
