@@ -17,9 +17,6 @@ UBouncingPower::UBouncingPower()
 
 	// Default values
 	Identifier = -1;
-	BallCreationTime = 2.0f;
-	BallUnchargingTime = 0.2f;
-	FinalScale = FVector(0.3f, 0.3f, 0.3f);
 	ProjectionForce = 800000.0f;
 	TelekinesisRadius = 100.0f;
 	TelekinesisRange = 10000.0f;
@@ -145,7 +142,7 @@ void UBouncingPower::PowerPressed()
 	{
 		BounceState = EBounceEnum::BE_BallCharging;
 		if (BouncingBall)
-			BouncingBall->ChangeScale(FVector::ZeroVector, FinalScale, BallCreationTime, FSimpleCallback::CreateLambda([&] { BounceState = EBounceEnum::BE_BallReady; }));
+			BouncingBall->ChangeScale(FSimpleCallback::CreateLambda([&] { BounceState = EBounceEnum::BE_BallReady; }));
 	}
 	// Else try to get the ball back if it's thrown
 	else if (BounceState == EBounceEnum::BE_BallThrown)
@@ -166,7 +163,7 @@ void UBouncingPower::PowerReleased()
 	{
 		BounceState = EBounceEnum::BE_BallUncharging;
 		if (BouncingBall)
-			BouncingBall->ChangeScale(FinalScale, FVector::ZeroVector, BallUnchargingTime, FSimpleCallback::CreateLambda([] { }));
+			BouncingBall->ChangeScale(FSimpleCallback::CreateLambda([] { }));
 	}
 	// Else if the ball is ready, throw it
 	else if (BounceState == EBounceEnum::BE_BallReady)

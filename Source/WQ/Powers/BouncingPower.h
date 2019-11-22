@@ -68,18 +68,6 @@ protected:
 	UPROPERTY()
 	ABouncingBall* BouncingBall;
 
-	/** Bouncing ball creation time */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
-	float BallCreationTime;
-
-	/** Bouncing ball reduction time when the power is released while charging */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
-	float BallUnchargingTime;
-
-	/** Bouncing ball final scale */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
-	FVector FinalScale;
-
 	/** Bouncing ball projection force */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	float ProjectionForce;
