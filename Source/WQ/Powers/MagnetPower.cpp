@@ -13,7 +13,7 @@
 #include "MagnetIndicator.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
-#include "Math/UnrealMathUtility.h" 
+#include "Math/UnrealMathUtility.h"
 
 /** Sets default values for this component's properties */
 UMagnetPower::UMagnetPower()
@@ -27,7 +27,6 @@ UMagnetPower::UMagnetPower()
 	SphereRadius = 20.0f;
 	MagnetRadius = 60.0f;
 	MagnetForce = 100000.0f;
-	bIsTargettingActivated = false;
 	PropulsionForce = 500000.0f;
 	MagnetizationRadiusCoeff = 0.8f;
 	Identifier = 0;
@@ -35,6 +34,12 @@ UMagnetPower::UMagnetPower()
 	MaxMagnetizedSpeed = 5000.0f;
 	PreviousSlope = 0.0f;
 	PreviousRTPCValue = 0.0f;
+	MinPropsAmountToSummon = 4;
+	GlowMultiplier = 10.0f;
+	DeniedSummonColor = FLinearColor::Red;
+	DeniedSummonGlowDuration = 0.3f;
+	DeniedSummonGlowMultiplier = 200.0f;
+	SummonCheckboxExtent = FVector(50.0f, 50.0f, 20.0f);
 
 	/// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
@@ -53,6 +58,8 @@ void UMagnetPower::BeginPlay()
 	// Create the sweep parameters 
 	Sphere = FCollisionShape::MakeSphere(SphereRadius);
 	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius);
+	SummonCheckbox = FCollisionShape::MakeBox(SummonCheckboxExtent * 0.5f);
+	//SummonCheckbox = FCollisionShape::MakeCapsule(100.0f, 50.0f);
 	SweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 
@@ -76,23 +83,53 @@ void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (bIsTargettingActivated)
+	if (MagnetState != EMagnetEnum::ME_None)
 	{
 		UpdateMagnet();
 
 		UpdateMagnetRTPC();
+
+		if (MagnetState == EMagnetEnum::ME_Summoning)
+		{
+			UpdateSummonTargetting();
+		}
+	}
+}
+
+/** Behaviour when the power is activated */
+void UMagnetPower::SetPowerActive(bool bState)
+{
+	if (bState)
+	{
+		// Subscribe to the correct events
+		Character->OnPowerPressed().AddUFunction(this, TEXT("PowerPressed"));
+		Character->OnPowerReleased().AddUFunction(this, TEXT("PowerReleased"));
+		Character->OnSummonPressed().AddUFunction(this, TEXT("SummonPressed"));
+		Character->OnSummonReleased().AddUFunction(this, TEXT("SummonReleased"));
+		MagnetState = EMagnetEnum::ME_None;
+	}
+	else
+	{
+		// Unsubscribe
+		Character->OnPowerPressed().RemoveAll(this);
+		Character->OnPowerReleased().RemoveAll(this);
+		Character->OnSummonPressed().RemoveAll(this);
+		Character->OnSummonReleased().RemoveAll(this);
+		MagnetState = EMagnetEnum::ME_None;
 	}
 }
 
 /** Behaviour when the power is pressed */
 void UMagnetPower::PowerPressed()
 {
-	// Activate the power only if it's not already activated or if the objects are not being dragged towards the player
-	if (!bIsTargettingActivated)
+	// Activate the power only if it's not already activated
+	if (MagnetState == EMagnetEnum::ME_None)
 	{
-		bIsTargettingActivated = true;
+		MagnetState = EMagnetEnum::ME_Targetting;
 		if (MagnetIndicator)
+		{
 			MagnetIndicator->SetActorActive(true);
+		}
 	}
 }
 
@@ -100,19 +137,21 @@ void UMagnetPower::PowerPressed()
 void UMagnetPower::PowerReleased()
 {
 	// Deactivate the power only if it's already activated
-	if (bIsTargettingActivated)
+	if (MagnetState != EMagnetEnum::ME_None)
 	{
-		bIsTargettingActivated = false;
+		MagnetState = EMagnetEnum::ME_None;
 
 		Character->ClearAllPhysicHandle();
 
 		for (AProps* Prop : MagnetizedProps)
 		{
-			if (Prop != nullptr)
+			if (IsValid(Prop))
 			{
 				Prop->FlyStop();
-				Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
-				Prop->SetMaterial(Mat1);
+				//Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
+				
+				// Make the prop unglow
+				Prop->SetGlow(0.0f);
 
 				// Stop the ambiance sound
 				if (IsValid(GameInstance))
@@ -125,6 +164,40 @@ void UMagnetPower::PowerReleased()
 		if (MagnetIndicator)
 		{
 			MagnetIndicator->SetActorActive(false);
+		}
+	}
+}
+
+/** Behaviour when the summon action is pressed */
+void UMagnetPower::SummonPressed()
+{
+	// Only launch the summoning if we have enough props
+	if (MagnetState == EMagnetEnum::ME_Targetting && MagnetizedProps.Num() >= MinPropsAmountToSummon)
+	{
+		MagnetState = EMagnetEnum::ME_Summoning;
+	}
+	// Otherwise, make the objects glow red
+	else
+	{
+		for (AProps* Prop : MagnetizedProps)
+		{
+			if (IsValid(Prop))
+			{
+				Prop->SetGlow(DeniedSummonGlowMultiplier, DeniedSummonGlowDuration, DeniedSummonColor, true);
+			}
+		}
+	}
+}
+
+/** Behaviour when the summon action is released */
+void UMagnetPower::SummonReleased()
+{
+	if (MagnetState == EMagnetEnum::ME_Summoning)
+	{
+		// Check if we can summon
+		if (UpdateSummonTargetting())
+		{
+			// TODO: Summoning logic
 		}
 	}
 }
@@ -177,7 +250,9 @@ void UMagnetPower::UpdateMagnet()
 				PH->GrabComponentAtLocation(PrimComps[0], FName("", MagnetizedProps.Num()), GrabLocation);
 				Prop->FlyTowards(FinalLocation, MagnetForce);
 				MagnetizedProps.Add(Prop);
-				Prop->SetMaterial(Mat2);
+
+				// Make the prop glow
+				Prop->SetGlow(GlowMultiplier);
 
 				// Play the required sound
 				if (IsValid(GameInstance))
@@ -213,5 +288,52 @@ void UMagnetPower::UpdateMagnetRTPC()
 			GameInstance->AudioManager()->SetRTPCMagnetizedAmbiance(Prop, NewRTPCValue);
 		}
 	}
+}
+
+/** Update the summon targetting, and returns whether or not the summon can take place in the area */
+bool UMagnetPower::UpdateSummonTargetting()
+{
+	// Do an initial line trace to find the nearest ground surface
+	UWorld* const World = GetWorld();
+	FHitResult Hit(1.f);
+	// Define the start point as the target location of the handles
+	FVector Start;
+	FRotator Temp;
+	Character->GetPhysicHandlesLocationRotation(Start, Temp);
+	// Define the end 60m below
+	FVector End = Start - FVector(0.0f, 0.0f, 100000.0f);
+	// Test the Environment
+	FCollisionObjectQueryParams Params;
+	Params.AddObjectTypesToQuery(ECC_GameTraceChannel12); // Environment
+	World->LineTraceSingleByObjectType(Hit, Start, End, Params, SweepParams);
+	DrawDebugLine(World, Start, End, FColor::Orange);
+
+	// If we hit something, do an upward check with the summon check box, with the correct rotation
+	if (Hit.IsValidBlockingHit())
+	{
+		TArray<FHitResult> SummonHits;
+		// Add AI and Big props to the sweep
+		Params.AddObjectTypesToQuery(ECC_GameTraceChannel1); // AI
+		Params.AddObjectTypesToQuery(ECC_GameTraceChannel11); // Big props
+		FVector StartSummonSweep = Hit.Location + FVector(0.0f, 0.0f, SummonCheckboxExtent.Z);
+		FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartSummonSweep, Character->GetActorLocation());
+		LookAtRotator.Pitch = 0.f; // Remove any pitch
+		FVector SummonLocation;
+
+		//DrawDebugBoxTraceMulti(World, StartSummonSweep, StartSummonSweep + FVector::UpVector, SummonCheckboxExtent / 2.0f, LookAtRotator, EDrawDebugTrace::ForOneFrame, true, SummonHits, FLinearColor::Blue, FLinearColor::Red, 0.0f);
+		//if (World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector * 0.1f, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams ))
+		// If we hit nothing
+		if (!World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams))
+		{
+			// TODO: Place VFX Green area of spawning
+			return true;
+		}
+		
+		//DrawDebugBox(World, SummonLocation, SummonCheckboxExtent, LookAtRotator.Quaternion(), FColor::Orange);
+		//DrawDebugCapsule(World, SummonLocation, 50.0f, 100.0f, LookAtRotator.Quaternion(), FColor::Orange);
+	}
+
+	// TODO: Change VFX area to red
+	return false;
 }
 

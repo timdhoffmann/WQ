@@ -27,7 +27,7 @@ public:
 	virtual void SetPowerActive(bool bState);
 
 	/** Getter for the identifier */
-	virtual int GetIdentifier() const { return Identifier; }
+	FORCEINLINE int GetIdentifier() const { return Identifier; }
 
 protected:
 	/** Called when the game starts */

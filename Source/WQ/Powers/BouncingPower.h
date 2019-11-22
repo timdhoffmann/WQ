@@ -46,7 +46,7 @@ protected:
 	/** Behaviour when the power is deactivated */
 	virtual void PowerReleased() override;
 
-	/** Update the ball targetting when the ball is thrown */
+	/** Update the ball targetting when the ball is thrown, and returns whether or not the ball is targettable */
 	bool UpdateBallTargetting();
 
     void UpdateAuraLogic();
