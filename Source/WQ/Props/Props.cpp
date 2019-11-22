@@ -181,7 +181,7 @@ void AProps::SetGlow(float Multiplier, float Duration, FLinearColor Color, bool 
 	// Add a random force for more visual feedback
 	if (bShouldRandPropulse && IsValid(Mesh))
 	{
-		Mesh->AddForce(FVector(FMath::RandRange(0.0f, 30000.0f), FMath::RandRange(0.0f, 30000.0f), FMath::RandRange(0.0f, 30000.0f)), NAME_None, true);
+		Mesh->AddForce(FVector(FMath::RandRange(0.0f, 40000.0f), FMath::RandRange(0.0f, 40000.0f), FMath::RandRange(0.0f, 40000.0f)), NAME_None, true);
 	}
 }
 

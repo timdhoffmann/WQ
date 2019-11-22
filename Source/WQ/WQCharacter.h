@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "WQCharacter.generated.h"
 class UInputComponent;
 class UWQGameInstance;
@@ -38,6 +39,9 @@ public:
 	
 	/** Returns the Physic Handles */
 	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+
+	/** Returns the Physic Handles */
+	void GetPhysicHandlesLocationRotation(FVector& Location, FRotator& Rotation) const { return PhysicHandles[0]->GetTargetLocationAndRotation(Location, Rotation); }
 
 	/** Get or add a physic handle and returns a ref to it */
 	UPhysicsHandleComponent* GetUnusedPhysicHandle();

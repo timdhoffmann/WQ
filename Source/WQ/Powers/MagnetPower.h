@@ -56,6 +56,9 @@ protected:
 	/** Update the audio RTPC of the magnetized props */
 	void UpdateMagnetRTPC();
 
+	/** Update the summon targetting, and returns whether or not the summon can take place in the area */
+	bool UpdateSummonTargetting();
+
 protected:
 	/** Range of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
@@ -113,6 +116,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Summon")
 	float DeniedSummonGlowMultiplier;
 
+	/** Check box extent (size of the cube used to test whether or not a zone can spawn a golem) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Summon")
+	FVector SummonCheckboxExtent;
+
 	/** State of the magnet power */
 	EMagnetEnum MagnetState;
 
@@ -127,6 +134,7 @@ protected:
 	/** Sweep parameters */
 	FCollisionShape Sphere;
 	FCollisionShape BiggerSphere;
+	FCollisionShape SummonCheckbox;
 	FCollisionQueryParams SweepParams;
 
 	/** Props list */

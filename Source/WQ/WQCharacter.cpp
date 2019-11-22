@@ -15,7 +15,6 @@
 #include "Managers/EventManager.h"
 #include "Managers/PauseManager.h"
 #include "Math/UnrealMathUtility.h"
-#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Powers/Power.h"
 #include "GameFramework/CharacterMovementComponent.h"
 

@@ -13,7 +13,7 @@
 #include "MagnetIndicator.h"
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
-#include "Math/UnrealMathUtility.h" 
+#include "Math/UnrealMathUtility.h"
 
 /** Sets default values for this component's properties */
 UMagnetPower::UMagnetPower()
@@ -39,6 +39,7 @@ UMagnetPower::UMagnetPower()
 	DeniedSummonColor = FLinearColor::Red;
 	DeniedSummonGlowDuration = 0.3f;
 	DeniedSummonGlowMultiplier = 200.0f;
+	SummonCheckboxExtent = FVector(50.0f, 50.0f, 20.0f);
 
 	/// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
@@ -57,6 +58,8 @@ void UMagnetPower::BeginPlay()
 	// Create the sweep parameters 
 	Sphere = FCollisionShape::MakeSphere(SphereRadius);
 	BiggerSphere = FCollisionShape::MakeSphere(MagnetRadius);
+	SummonCheckbox = FCollisionShape::MakeBox(SummonCheckboxExtent * 0.5f);
+	//SummonCheckbox = FCollisionShape::MakeCapsule(100.0f, 50.0f);
 	SweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 
@@ -85,6 +88,11 @@ void UMagnetPower::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 		UpdateMagnet();
 
 		UpdateMagnetRTPC();
+
+		if (MagnetState == EMagnetEnum::ME_Summoning)
+		{
+			UpdateSummonTargetting();
+		}
 	}
 }
 
@@ -166,7 +174,7 @@ void UMagnetPower::SummonPressed()
 	// Only launch the summoning if we have enough props
 	if (MagnetState == EMagnetEnum::ME_Targetting && MagnetizedProps.Num() >= MinPropsAmountToSummon)
 	{
-
+		MagnetState = EMagnetEnum::ME_Summoning;
 	}
 	// Otherwise, make the objects glow red
 	else
@@ -184,7 +192,10 @@ void UMagnetPower::SummonPressed()
 /** Behaviour when the summon action is released */
 void UMagnetPower::SummonReleased()
 {
-
+	if (MagnetState == EMagnetEnum::ME_Summoning)
+	{
+		// Check if we can summon
+	}
 }
 
 /** Update the magnet (target, objects in it...) */
@@ -273,5 +284,74 @@ void UMagnetPower::UpdateMagnetRTPC()
 			GameInstance->AudioManager()->SetRTPCMagnetizedAmbiance(Prop, NewRTPCValue);
 		}
 	}
+}
+
+/** Update the summon targetting, and returns whether or not the summon can take place in the area */
+bool UMagnetPower::UpdateSummonTargetting()
+{
+	// Do an initial line trace to find the nearest ground surface
+	UWorld* const World = GetWorld();
+	FHitResult Hit(1.f);
+	// Define the start point as the target location of the handles
+	FVector Start;
+	FRotator Temp;
+	Character->GetPhysicHandlesLocationRotation(Start, Temp);
+	// Define the end 60m below
+	FVector End = Start - FVector(0.0f, 0.0f, 100000.0f);
+	// Test the Environment
+	FCollisionObjectQueryParams Params;
+	Params.AddObjectTypesToQuery(ECC_GameTraceChannel12); // Environment
+	World->LineTraceSingleByObjectType(Hit, Start, End, Params, SweepParams);
+	DrawDebugLine(World, Start, End, FColor::Orange);
+
+	// If we hit something, do an upward check with the summon check box, with the correct rotation
+	if (Hit.IsValidBlockingHit())
+	{
+		TArray<FHitResult> SummonHits;
+		// Add AI and Big props to the sweep
+		Params.AddObjectTypesToQuery(ECC_GameTraceChannel1); // AI
+		Params.AddObjectTypesToQuery(ECC_GameTraceChannel11); // Big props
+		FVector StartSummonSweep = Hit.Location + FVector(0.0f, 0.0f, SummonCheckboxExtent.Z);
+		FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartSummonSweep, Character->GetActorLocation());
+		LookAtRotator.Pitch = 0.f; // Remove any pitch
+		FVector SummonLocation;
+
+		//DrawDebugBoxTraceMulti(World, StartSummonSweep, StartSummonSweep + FVector::UpVector, SummonCheckboxExtent / 2.0f, LookAtRotator, EDrawDebugTrace::ForOneFrame, true, SummonHits, FLinearColor::Blue, FLinearColor::Red, 0.0f);
+		//if (World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector * 0.1f, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams ))
+		if (World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams))
+		{
+			UE_LOG(LogTemp, Error, TEXT("HIT NUMBER: %i"), SummonHits.Num());
+			SummonLocation = SummonHits[0].Location;
+		}
+		else
+		{
+			SummonLocation = StartSummonSweep;
+		}
+		
+		DrawDebugBox(World, SummonLocation, SummonCheckboxExtent, LookAtRotator.Quaternion(), FColor::Orange);
+		//DrawDebugCapsule(World, SummonLocation, 50.0f, 100.0f, LookAtRotator.Quaternion(), FColor::Orange);
+	}
+
+	//// If hit, then check that there is no environment between the player and the ball
+	//FVector FinalLocation;
+	//if (Hit.IsValidBlockingHit())
+	//{
+	//	FVector FinalLocation = Hit.Location;
+	//	DrawDebugSphere(World, FinalLocation, TelekinesisRadius, 32, FColor::White);
+
+	//	// Raycast to the environment to check that there is nothing blocking
+	//	Hit.Reset(1.f, false);
+	//	World->LineTraceSingleByChannel(Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams);
+	//	FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
+
+	//	if (FVector::DistSquared(Character->GetActorLocation(), FinalLocation) <= FVector::DistSquared(Character->GetActorLocation(), BlockingLocation))
+	//	{
+	//		// TODO: Change HUD + Ball Highlight?
+	//		return true;
+	//	}
+	//}
+
+	// TODO: Change VFX area to red
+	return false;
 }
 
