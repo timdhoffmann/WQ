@@ -30,4 +30,8 @@ public:
                             AWQPusherController();
 
     void                    BeginPlay() override;
+    void                    Tick( float DeltaTime ) override;
+
+private:
+    AActor*                 ForgeTarget;
 };

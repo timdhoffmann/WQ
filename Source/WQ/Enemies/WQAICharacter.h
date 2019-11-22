@@ -3,6 +3,8 @@
 #pragma once
 
 class UInputComponent;
+class AWQAISpawner;
+
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
 #include "UObject/ObjectMacros.h"
@@ -51,12 +53,10 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = AI)
 	int               InitialHealthPoints;
 
-	///** Initial state */
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Enemies)
-	//EAIStateEnum        InitialState;
-
 	/** Track the current information of the AI character */
 	UPROPERTY(VisibleAnywhere)
-    int               HealthPoints;
-    //EAIStateEnum        InstanceState;
+    int                 HealthPoints;
+
+    UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = AI )
+    AWQAISpawner*       SpawnOrigin;
 };

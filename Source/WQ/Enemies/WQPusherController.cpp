@@ -22,8 +22,8 @@
 
 AWQPusherController::AWQPusherController()
 {
-    static ConstructorHelpers::FObjectFinder<UBehaviorTree> btFinder( TEXT( "/Game/_Dev/Baptiste/AI/BT_Minion" ) );
-    static ConstructorHelpers::FObjectFinder<UBlackboardData> bbData( TEXT( "/Game/_Dev/Baptiste/AI/B_Minion" ) );
+    static ConstructorHelpers::FObjectFinder<UBehaviorTree> btFinder( TEXT( "/Game/Blueprints/Enemies/BT_Pusher" ) );
+    static ConstructorHelpers::FObjectFinder<UBlackboardData> bbData( TEXT( "/Game/Blueprints/Enemies/BD_Pusher" ) );
 
     BehaviorTree = btFinder.Object;
 
@@ -33,17 +33,43 @@ AWQPusherController::AWQPusherController()
 
     InitializeBlackboard( *BlackboardComponent, *BlackboardAsset );
     BehaviorTree->BlackboardAsset = BlackboardComponent->GetBlackboardAsset();
+
+    PrimaryActorTick.bCanEverTick = true;
 }
 
 void AWQPusherController::BeginPlay()
 {
     Super::BeginPlay();
 
-    AActor* ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
-
+    ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
     if ( ForgeTarget != nullptr ) {
         BlackboardComponent->SetValueAsObject( TEXT( "ForgeKey" ), ForgeTarget );
     }
  
     RunBehaviorTree( BehaviorTree );
+}
+
+void AWQPusherController::Tick( float DeltaTime )
+{
+    Super::Tick( DeltaTime );
+
+    FVector NextActorPosition = ForgeTarget->GetActorLocation();
+
+    AWQAICharacter* character = reinterpret_cast< AWQAICharacter* >( GetCharacter() );
+    character->SetActorRotation( UKismetMathLibrary::FindLookAtRotation( character->GetActorLocation(), NextActorPosition ).Quaternion(), ETeleportType::TeleportPhysics );
+
+    BlackboardComponent->SetValueAsObject( TEXT( "ForgeKey" ), ForgeTarget );
+
+    float distanceToForge = FVector::Distance( NextActorPosition, GetCharacter()->GetActorLocation() );
+
+    if ( distanceToForge <= 100.0f ) {
+        AWQAICharacter* forgeAi = reinterpret_cast< AWQAICharacter* >( ForgeTarget );
+        forgeAi->ApplyDamage( 1 );
+
+        // Crap placeholder
+        // TODO SHOULD BE MODIFIED 
+        GEngine->AddOnScreenDebugMessage( -1, 9999.0, FColor::Purple, TEXT( "G A M E  O V E R" ), true, FVector2D( 8, 8 ) );
+
+        GetWorld()->ServerTravel( FString( "/Game/_Dev/Baptiste/Maps/MainMenu" ), true );
+    }
 }
