@@ -2,6 +2,9 @@
 #include "WQAICharacter.h"
 #include "WQAISpawner.h"
 
+#include "WQ/Managers/WQGameInstance.h"
+#include "WQ/Managers/SpawnDirector.h"
+
 /** Sets default values */
 AWQAICharacter::AWQAICharacter()
 {
@@ -53,7 +56,7 @@ void AWQAICharacter::ApplyDamage(const int Damage)
 	{
         // If the current AI character has been spawned from a spawner, notify its death in order to update the spawner ticket count
         if ( SpawnOrigin != nullptr ) {
-            SpawnOrigin->DecrementSpawnTickets();
+            reinterpret_cast< UWQGameInstance* >( GetGameInstance() )->SpawnDirector()->NumberHarasser--;
         }
 
 		// TODO: Death logic

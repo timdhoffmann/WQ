@@ -11,9 +11,6 @@ class WQ_API AWQAISpawner : public AActor
 {
 	GENERATED_BODY()
 
-public:
-    inline void DecrementSpawnTickets() { NumberHarasser--; }
-
 public:	
 	// Sets default values for this actor's properties
 	AWQAISpawner();
@@ -25,8 +22,4 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-
-private:
-    UPROPERTY( VisibleAnywhere, BlueprintReadWrite, Category = Movement, meta = ( AllowPrivateAccess = "true" ) )
-    int32 NumberHarasser;
 };
