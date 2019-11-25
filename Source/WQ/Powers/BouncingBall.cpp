@@ -9,6 +9,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/WorldSettings.h"
 #include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 /** Sets default values */
 ABouncingBall::ABouncingBall()
@@ -37,7 +38,7 @@ void ABouncingBall::BeginPlay()
 	// Set the initial state
 	State = EBoucingBallEnum::BBE_General;
 
-	// Get the ball collider & the Niagara component
+	// Get the ball collider
 	TArray<USphereComponent*> Temp;
 	GetComponents<USphereComponent>(Temp);
 	if (Temp.Num() > 0)
@@ -49,8 +50,11 @@ void ABouncingBall::BeginPlay()
 	BallCollider->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
 	BallCollider->SetNotifyRigidBodyCollision(false);
 	
-	// Activate all elements with zero scale, and disable physics
-	SetBallActive(true);
+	// Activate the collider and reset the ball
+	if (IsValid(BallCollider))
+	{
+		BallCollider->SetActive(true);
+	}
 	ResetBall();
 }
 
@@ -84,27 +88,41 @@ void ABouncingBall::Tick(float DeltaTime)
 	}
 }
 
-/** Changes the scale of the ball elements in a given time */
-void ABouncingBall::ChangeScale(FSimpleCallback Callback)
+/** Launches the charge of the ball */
+void ABouncingBall::Charge(FSimpleCallback Callback)
 {
 	State = EBoucingBallEnum::BBE_Charging;
 
-	// Launch the animation
-	//BallNiagara->SetPaused(false);
+	// Launch the animation and add the end of charge event
+	ChargeParticleSystem->Activate(true);
+	ChargeParticleSystem->OnSystemFinished.AddDynamic(this, &ABouncingBall::OnChargeComplete);
 
 	// Update the new resizing callback
 	CurrentCallback.Unbind();
 	CurrentCallback = Callback;
 }
 
+/** Stops the charge */
+void ABouncingBall::StopCharge()
+{
+	ChargeParticleSystem->OnSystemFinished.RemoveDynamic(this, &ABouncingBall::OnChargeComplete);
+	ResetBall();
+}
+
 /** Activate/deactivate the ball */
 void ABouncingBall::SetBallActive(bool bState)
 {
-	//if (IsValid(BallNiagara))
-	//{
-	//	BallNiagara->SetActive(bState);
-	//	BallNiagara->SetHiddenInGame(!bState);
-	//}
+	if (IsValid(ChargeParticleSystem))
+	{
+		if (bState)
+		{
+			ChargeParticleSystem->Activate(true);
+		}
+		else
+		{
+			ChargeParticleSystem->Deactivate();
+		}
+	}
 
 	if (IsValid(BallCollider))
 	{
@@ -187,9 +205,10 @@ void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength
 /** Reset the ball position and scale */
 void ABouncingBall::ResetBall()
 {
-	//BallNiagara->ResetSystem();
-	//BallNiagara->SetPaused(true);
-	//GetRootComponent()->SetWorldScale3D(FVector::ZeroVector);
+	ChargeParticleSystem->DeactivateSystem();
+	ChargeParticleSystem->KillParticlesForced();
+	FinishedBallMesh->SetActive(false);
+	FinishedBallMesh->SetHiddenInGame(true);
 	SetPhysicSimulation(false);
 	SetGravitySimulation(true);
 	SetCollisionProfile(TEXT("BallHeld"));
@@ -229,14 +248,20 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	}
 }
 
-///** Allows us to call the callback when the Niagara animation is finished playing */
-//void ABouncingBall::OnBallComplete(UNiagaraComponent* NiagaraComponent)
-//{
-//	BallNiagara->SetPaused(true);
-//	State = EBoucingBallEnum::BBE_General;
-//	CurrentCallback.ExecuteIfBound();
-//	CurrentCallback.Unbind();
-//}
+/** Allows us to call the callback when the Niagara animation is finished playing */
+void ABouncingBall::OnChargeComplete(UParticleSystemComponent* ParticleSystem)
+{
+	// Remove the notification
+	ChargeParticleSystem->OnSystemFinished.RemoveDynamic(this, &ABouncingBall::OnChargeComplete);
+	// Deactivate the particles and show the mesh
+	ChargeParticleSystem->Deactivate();
+	FinishedBallMesh->SetActive(true);
+	FinishedBallMesh->SetHiddenInGame(false);
+	// Change the state and call the callback
+	State = EBoucingBallEnum::BBE_General;
+	CurrentCallback.ExecuteIfBound();
+	CurrentCallback.Unbind();
+}
 
 void ABouncingBall::TriggerSlowdown( AWQAIEnemy* touchedActor )
 {

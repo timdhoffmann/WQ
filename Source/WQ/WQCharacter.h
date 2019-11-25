@@ -128,10 +128,6 @@ protected:
 	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
 	//class USkeletalMeshComponent* Mesh1P;
 
-	/** Location on gun mesh where projectiles should spawn. */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Mesh)
-	USceneComponent* FP_MuzzleLocation;
-
 	/** First person camera */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* FirstPersonCameraComponent;

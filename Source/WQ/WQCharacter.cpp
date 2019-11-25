@@ -66,9 +66,6 @@ void AWQCharacter::BeginPlay()
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Sight::StaticClass(), this );
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Hearing::StaticClass(), this );
 
-	//// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
-	//Mesh1P->SetHiddenInGame(false, true);
-
 	// Get all the powers attached and sort them by identifier
 	GetComponents<UPower>(Powers);
 	Powers.Sort([](const UPower& A, const UPower& B) {
@@ -91,7 +88,7 @@ void AWQCharacter::BeginPlay()
 	LastLocation = GetActorLocation();
 	CurrentFootstepsInterval = NormalFootstepsInterval;
 
-	// Initialize the Game Instance
+	// Initialize the Game Instance ref
 	GameInstance = Cast<UWQGameInstance>(GetGameInstance());
 	if (!IsValid(GameInstance))
 	{

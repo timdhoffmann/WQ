@@ -48,19 +48,10 @@ void UBouncingPower::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Spawn the ball
 	if (BouncingBallBP)
 	{
-		UWorld* const World = GetWorld();
-		if (World)
-		{
-			BouncingBall = World->SpawnActor<ABouncingBall>(BouncingBallBP, Character->GetFireSceneComponent()->GetComponentLocation(), Character->GetActorRotation()); // The bouncing ball starts disabled
-			BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			BouncingBall->SetDamage(BallDamage);
-            BouncingBall->SetSlowmoState( SlowmoEnabled );
-            BouncingBall->SetSlowmoDelay( SlowmoDelay );
-            BouncingBall->SetSlowmoDuration( SlowmoDuration );
-            BouncingBall->SetSlowmoLeverage( SlowmoLeverage );
-		}
+		SpawnBall();
 	}
 	else
 	{
@@ -85,6 +76,22 @@ void UBouncingPower::BeginPlay()
 
 	// Initialize the CurrentProjectionTime
 	CurrentProjectionTime = 0.0f;
+}
+
+/** Spawn the ball */
+void UBouncingPower::SpawnBall()
+{
+	UWorld* const World = GetWorld();
+	if (World)
+	{
+		BouncingBall = World->SpawnActor<ABouncingBall>(BouncingBallBP, Character->GetFireSceneComponent()->GetComponentLocation(), Character->GetActorRotation()); // The bouncing ball starts disabled
+		BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		BouncingBall->SetDamage(BallDamage);
+		BouncingBall->SetSlowmoState(SlowmoEnabled);
+		BouncingBall->SetSlowmoDelay(SlowmoDelay);
+		BouncingBall->SetSlowmoDuration(SlowmoDuration);
+		BouncingBall->SetSlowmoLeverage(SlowmoLeverage);
+	}
 }
 
 /** Behaviour when the power is activated */
@@ -140,8 +147,12 @@ void UBouncingPower::PowerPressed()
 	if (BounceState == EBounceEnum::BE_BallUncharging)
 	{
 		BounceState = EBounceEnum::BE_BallCharging;
-		if (BouncingBall)
-			BouncingBall->ChangeScale(FSimpleCallback::CreateLambda([&] { BounceState = EBounceEnum::BE_BallReady; }));
+		// Spawn a ball if the previous one has disappeared
+		if (!IsValid(BouncingBall))
+		{
+			SpawnBall();
+		}
+		BouncingBall->Charge(FSimpleCallback::CreateLambda([&] { BounceState = EBounceEnum::BE_BallReady; }));
 	}
 	// Else try to get the ball back if it's thrown
 	else if (BounceState == EBounceEnum::BE_BallThrown)
@@ -161,13 +172,15 @@ void UBouncingPower::PowerReleased()
 	if (BounceState == EBounceEnum::BE_BallCharging)
 	{
 		BounceState = EBounceEnum::BE_BallUncharging;
-		if (BouncingBall)
-			BouncingBall->ChangeScale(FSimpleCallback::CreateLambda([] { }));
+		if (IsValid(BouncingBall))
+		{
+			BouncingBall->StopCharge();
+		}
 	}
 	// Else if the ball is ready, throw it
 	else if (BounceState == EBounceEnum::BE_BallReady)
 	{
-		if (BouncingBall)
+		if (IsValid(BouncingBall))
 		{
 			// Trace to see what we should hit
 			FHitResult Hit(1.f);
