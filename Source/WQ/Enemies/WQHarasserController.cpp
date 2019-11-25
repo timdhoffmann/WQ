@@ -17,6 +17,7 @@
 #include "Runtime/Engine/Classes/GameFramework/PawnMovementComponent.h"
 
 #include <limits>
+#include "EngineUtils.h"
 
 #include "Enemies/WQAICharacter.h"
 #include "WQ/WQCharacter.h"
@@ -43,7 +44,15 @@ void AWQHarasserController::BeginPlay()
 {
     Super::BeginPlay();
 
-    ActorTarget = FindObject<AWQCharacter>( GetLevel(), TEXT( "FirstPersonCharacter2" ) );
+    for ( TActorIterator<AWQCharacter> ActorItr( GetWorld() ); ActorItr; ++ActorItr ) {
+        GEngine->AddOnScreenDebugMessage( -1, 32.0f, FColor::Red, ActorItr->GetName() );
+
+        if ( ActorItr->GetName() == "BP_WQCharacter_C_0" ) {
+            ActorTarget = *ActorItr;
+            break;
+        }
+    }
+
     BlackboardComponent->SetValueAsObject( TEXT( "PlayerKey" ), ActorTarget );
 
     RunBehaviorTree( BehaviorTree );

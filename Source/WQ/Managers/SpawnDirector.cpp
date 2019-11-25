@@ -12,3 +12,10 @@ USpawnDirector::~USpawnDirector()
 {
 	
 }
+
+bool USpawnDirector::IsSpawnerSuitable( const USphereComponent* spawnArea )
+{
+    return true;
+    /*FVector actorLocation = GetWorld()->GetFirstPlayerController()->GetPawn()->GetActorLocation();
+    return FVector::Dist( actorLocation, spawnArea->GetComponentLocation() ) > spawnArea->GetScaledSphereRadius();*/
+}

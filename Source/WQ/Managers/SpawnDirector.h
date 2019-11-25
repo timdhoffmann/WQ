@@ -6,6 +6,8 @@ class UUserWidget;
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "Components/SphereComponent.h"
+
 #include "SpawnDirector.generated.h"
 
 /**
@@ -23,4 +25,7 @@ public:
 public:
     USpawnDirector();
     ~USpawnDirector();
+
+    UFUNCTION( BlueprintCallable )
+    bool IsSpawnerSuitable( const USphereComponent* spawnArea );
 };
