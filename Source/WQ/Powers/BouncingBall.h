@@ -5,10 +5,21 @@
 class USceneComponent;
 class UPrimitiveComponent;
 class UStaticMeshComponent;
+class USphereComponent;
+class UNiagaraComponent;
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Managers/EventManager.h"
 #include "BouncingBall.generated.h"
+
+/** Enum for the states of the bouncing */
+UENUM(BlueprintType)
+enum class EBoucingBallEnum : uint8
+{
+	BBE_General 		UMETA(DisplayName = "General"),
+	BBE_Charging	    UMETA(DisplayName = "Charging"),
+	BBE_Telekinesis 	UMETA(DisplayName = "TelekinesisdBack"),
+};
 
 UCLASS()
 class WQ_API ABouncingBall : public AActor
@@ -23,7 +34,7 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	/** Changes the scale of the ball elements in a given time */
-	void ChangeScale(FVector InitialScale, FVector FinalScale, float Duration, FSimpleCallback Callback);
+	void ChangeScale(FSimpleCallback Callback);
 
 	/** Activate/deactivate the ball */
 	void SetBallActive(bool bState);
@@ -58,34 +69,31 @@ protected:
 	/** Changes the collision profile */
 	void SetCollisionProfile(FName CollisionProfileName);
 
+	/** Allows us to call the callback when the Niagara animation is finished playing */
+	UFUNCTION()
+	void OnBallComplete(UNiagaraComponent* NiagaraComponent);
+
 	/** Allows us to damage enemies when hit while the ball is thrown */
 	UFUNCTION()
 	void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
 
 protected:
-	//UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
-	//TArray<UStaticMeshComponent*> BallMeshes;
-	// Mesh used for the ball
+	/** Collider used for the ball */
 	UPROPERTY()
-	UStaticMeshComponent* BallMesh;
+	USphereComponent* BallCollider;
 
-	/** Is the ball resizing? */
-	bool bIsBallResizing;
+	/** Collider used for the ball */
+	UPROPERTY()
+	UNiagaraComponent* BallNiagara;
 
-	/** Is current telekinesis'd back ? */
-	bool bIsBallTelekinesisd;
+	/** State of the ball */
+	EBoucingBallEnum State;
 
 	/** Initial scale */
 	FVector InitialScale;
 
 	/** Target scale */
 	FVector TargetScale;
-
-	/** Current scaling status */
-	float CurrentScalingStatus;
-
-	/** Current scaling speed */
-	float CurrentScalingSpeed;
 
 	/** Current callback for when the scaling/telekinesis is finished */
 	FSimpleCallback CurrentCallback;

@@ -4,16 +4,21 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "WQCharacter.generated.h"
 class UInputComponent;
 class UWQGameInstance;
 class UCameraShake;
 class UCurveFloat;
 
-DECLARE_EVENT(AWQCharacter, FPowerPressed)
-DECLARE_EVENT(AWQCharacter, FPowerReleased)
-DECLARE_EVENT(AWQCharacter, FFirePressed)
-DECLARE_EVENT(AWQCharacter, FFireReleased)
+DECLARE_EVENT(AWQCharacter, FAction)
+//DECLARE_EVENT(AWQCharacter, FActionReleased)
+//DECLARE_EVENT(AWQCharacter, FPowerPressed)
+//DECLARE_EVENT(AWQCharacter, FPowerReleased)
+//DECLARE_EVENT(AWQCharacter, FFirePressed)
+//DECLARE_EVENT(AWQCharacter, FFireReleased)
+//DECLARE_EVENT(AWQCharacter, FSummonPressed)
+//DECLARE_EVENT(AWQCharacter, FSummonReleased)
 
 UCLASS(config=Game)
 class AWQCharacter : public ACharacter
@@ -35,6 +40,9 @@ public:
 	/** Returns the Physic Handles */
 	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
 
+	/** Returns the Physic Handles */
+	void GetPhysicHandlesLocationRotation(FVector& Location, FRotator& Rotation) const { return PhysicHandles[0]->GetTargetLocationAndRotation(Location, Rotation); }
+
 	/** Get or add a physic handle and returns a ref to it */
 	UPhysicsHandleComponent* GetUnusedPhysicHandle();
 
@@ -42,12 +50,16 @@ public:
 	void ClearAllPhysicHandle();
 
 	/** Accessor to the power events */
-	FPowerPressed& OnPowerPressed() { return PowerPressedEvent; }
-	FPowerReleased& OnPowerReleased() { return PowerReleasedEvent; }
+	FORCEINLINE FAction& OnPowerPressed() { return PowerPressedEvent; }
+	FORCEINLINE FAction& OnPowerReleased() { return PowerReleasedEvent; }
 
 	/** Accessor to the fire events */
-	FFirePressed& OnFirePressed() { return FirePressedEvent; }
-	FFireReleased& OnFireReleased() { return FireReleasedEvent; }
+	FORCEINLINE FAction& OnFirePressed() { return FirePressedEvent; }
+	FORCEINLINE FAction& OnFireReleased() { return FireReleasedEvent; }
+
+	/** Accessor to the summon events */
+	FORCEINLINE FAction& OnSummonPressed() { return SummonPressedEvent; }
+	FORCEINLINE FAction& OnSummonReleased() { return SummonReleasedEvent; }
 
 protected:
 	virtual void BeginPlay();
@@ -89,9 +101,14 @@ protected:
 	/** Fire binding methods, called by the input */
 	UFUNCTION()
 	void FirePressed();
-
 	UFUNCTION()
 	void FireReleased();
+
+	/** Summon binding methods, called by the input */
+	UFUNCTION()
+	void SummonPressed();
+	UFUNCTION()
+	void SummonReleased();
 
 	/** Power switching methods, called by the input */
 	UFUNCTION()
@@ -193,16 +210,19 @@ protected:
 	FVector LastLocation;
 
 	/** Called when the player presses the power input */
-	FPowerPressed PowerPressedEvent;
-
+	FAction PowerPressedEvent;
 	/** Called when the player releases the power input */
-	FPowerReleased PowerReleasedEvent;
+	FAction PowerReleasedEvent;
 
 	/** Called when the player presses the fire input */
-	FFirePressed FirePressedEvent;
-
+	FAction FirePressedEvent;
 	/** Called when the player releases the fire input */
-	FFireReleased FireReleasedEvent;
+	FAction FireReleasedEvent;
+
+	/** Called when the player presses the summon input */
+	FAction SummonPressedEvent;
+	/** Called when the player releases the summon input */
+	FAction SummonReleasedEvent;
 
 	/** Location of the effects of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Powers)
@@ -224,6 +244,9 @@ protected:
 
 	/** Game instance pointer */
 	UWQGameInstance* GameInstance;
+
+	/** Tracks if there is a run input to consume (useful in the cases where the sprint is activated during a jump, it will only be consumed when landing) */
+	bool bShouldRunInputBeConsumed;
 
 	/** Tracks the running status */
 	bool bIsRunning;
