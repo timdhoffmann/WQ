@@ -224,28 +224,28 @@ bool UBouncingPower::UpdateBallTargetting()
 
 void UBouncingPower::UpdateAuraLogic()
 {
-    // Do an initial sphere sweep with only the ball trace channel
-    UWorld* const World = GetWorld();
-    FHitResult Hit( 1.f );
-    FVector Start = UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
-    FVector End = Start + AuraRadius * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
-    World->SweepSingleByChannel( Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams );
+    //// Do an initial sphere sweep with only the ball trace channel
+    //UWorld* const World = GetWorld();
+    //FHitResult Hit( 1.f );
+    //FVector Start = UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
+    //FVector End = Start + AuraRadius * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
+    //World->SweepSingleByChannel( Hit, Start, End, FQuat::Identity,ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams );
 
-    // If hit, then check that there is no environment between the player and the ball
-    FVector FinalLocation;
-    if ( Hit.IsValidBlockingHit() ) {
-        FVector FinalLocation = Hit.Location;
-        DrawDebugSphere( World, FinalLocation, AuraRadius, 32, FColor::White );
+    //// If hit, then check that there is no environment between the player and the ball
+    //FVector FinalLocation;
+    //if ( Hit.IsValidBlockingHit() ) {
+    //    FVector FinalLocation = Hit.Location;
+    //    DrawDebugSphere( World, FinalLocation, AuraRadius, 32, FColor::White );
 
-        // Raycast to the environment to check that there is nothing blocking
-        Hit.Reset( 1.f, false );
-        World->LineTraceSingleByChannel( Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams );
-        FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
+    //    // Raycast to the environment to check that there is nothing blocking
+    //    Hit.Reset( 1.f, false );
+    //    World->LineTraceSingleByChannel( Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams );
+    //    FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
 
-        if ( FVector::DistSquared( Character->GetActorLocation(), FinalLocation ) <= FVector::DistSquared( Character->GetActorLocation(), BlockingLocation ) ) {
-            Hit.Actor->SetActorHiddenInGame( true );
-        }
-    }
+    //    if ( FVector::DistSquared( Character->GetActorLocation(), FinalLocation ) <= FVector::DistSquared( Character->GetActorLocation(), BlockingLocation ) ) {
+    //        Hit.Actor->SetActorHiddenInGame( true );
+    //    }
+    //}
 }
 
 /** Function called on telekinesis finished */

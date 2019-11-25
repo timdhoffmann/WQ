@@ -30,13 +30,6 @@ AWQMinionController::AWQMinionController()
     BlackboardComponent = CreateDefaultSubobject<UBlackboardComponent>( TEXT( "BlackboardComponent" ) );
     
     UBlackboardData* BlackboardAsset = bbData.Object;
-    /* UBlackboardData* BlackboardAssetCp = NewObject< UBlackboardData >( BlackboardComponent );
-     BlackboardAssetCp->UpdatePersistentKey<UObject>( FName( "MoveToActorKey" ) );
-     BlackboardAssetCp->UpdatePersistentKey<UObject>( FName( "SelfActor" ) );*/
-
-    //UBlackboardData* bbData2 = NewObject<UBlackboardData>( BlackboardComponent );
-    //*bbData2 = *( (UBlackboardData*)bbData.Object );
-
     InitializeBlackboard( *BlackboardComponent, *BlackboardAsset );
     BehaviorTree->BlackboardAsset = BlackboardComponent->GetBlackboardAsset();
 
