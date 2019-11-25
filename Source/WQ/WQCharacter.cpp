@@ -116,7 +116,7 @@ void AWQCharacter::BeginPlay()
 void AWQCharacter::Tick(float DeltaTime)
 {
 	// Consume the run input if needed
-	if (bShouldRunInputBeConsumed && !bWasJumping)
+	if (bShouldRunInputBeConsumed && !GetCharacterMovement()->IsFalling())
 	{
 		bIsRunning = true;
 		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
@@ -124,7 +124,8 @@ void AWQCharacter::Tick(float DeltaTime)
 		HeadbobShake = RunningHeadbobShake;
 	}
 
-	if (GetVelocity().SizeSquared() != 0.0f) // If we are moving
+	FVector HorizontalVelocity = FVector(GetVelocity().X, GetVelocity().Y, 0.0f);
+	if (HorizontalVelocity.SizeSquared() != 0.0f) // If we have horizontal movement
 	{
 		// Running FOV change logic
 		if (bIsRunning)
@@ -154,7 +155,7 @@ void AWQCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
-	else // Else if we are not moving
+	else // Else if we are not moving horizontally
 	{
 		if (!bLastFootstepPlayed)
 		{
@@ -293,8 +294,8 @@ void AWQCharacter::MoveForward(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorForwardVector(), Value);
 
-		// Try and play the headbob if specified
-		if (HeadbobShake != nullptr)
+		// Try and play the headbob if not jumping specified
+		if (!GetCharacterMovement()->IsFalling() && HeadbobShake != nullptr)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
@@ -308,8 +309,8 @@ void AWQCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
 
-		// Try and play the headbob if specified
-		if (HeadbobShake != nullptr)
+		// Try and play the headbob if not jumping specified
+		if (!GetCharacterMovement()->IsFalling() && HeadbobShake != nullptr)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
@@ -329,7 +330,7 @@ void AWQCharacter::Run()
 	}
 	else
 	{
-		if (bWasJumping)
+		if (GetCharacterMovement()->IsFalling())
 		{
 			bShouldRunInputBeConsumed = true;
 		}
