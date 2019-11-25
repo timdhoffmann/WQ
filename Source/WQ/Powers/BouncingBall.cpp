@@ -5,7 +5,6 @@
 #include "Math/UnrealMathUtility.h"
 #include "StaticUtils.h"
 #include "Enemies/WQAIEnemy.h"
-#include "NiagaraComponent.h" 
 #include "Components/SphereComponent.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/WorldSettings.h"
@@ -45,15 +44,6 @@ void ABouncingBall::BeginPlay()
 	{
 		BallCollider = Temp[0];
 	}
-	TArray<UNiagaraComponent*> TempNiagara;
-	GetComponents<UNiagaraComponent>(TempNiagara);
-	if (TempNiagara.Num() > 0)
-	{
-		BallNiagara = TempNiagara[0];
-	}
-
-	// Add the end of Niagara animation notification
-	BallNiagara->OnSystemFinished.AddDynamic(this, &ABouncingBall::OnBallComplete);
 
 	// Add the collision notification and disable the notifications for now
 	BallCollider->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
@@ -100,7 +90,7 @@ void ABouncingBall::ChangeScale(FSimpleCallback Callback)
 	State = EBoucingBallEnum::BBE_Charging;
 
 	// Launch the animation
-	BallNiagara->SetPaused(false);
+	//BallNiagara->SetPaused(false);
 
 	// Update the new resizing callback
 	CurrentCallback.Unbind();
@@ -110,11 +100,11 @@ void ABouncingBall::ChangeScale(FSimpleCallback Callback)
 /** Activate/deactivate the ball */
 void ABouncingBall::SetBallActive(bool bState)
 {
-	if (IsValid(BallNiagara))
-	{
-		BallNiagara->SetActive(bState);
-		BallNiagara->SetHiddenInGame(!bState);
-	}
+	//if (IsValid(BallNiagara))
+	//{
+	//	BallNiagara->SetActive(bState);
+	//	BallNiagara->SetHiddenInGame(!bState);
+	//}
 
 	if (IsValid(BallCollider))
 	{
@@ -197,8 +187,8 @@ void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength
 /** Reset the ball position and scale */
 void ABouncingBall::ResetBall()
 {
-	BallNiagara->ResetSystem();
-	BallNiagara->SetPaused(true);
+	//BallNiagara->ResetSystem();
+	//BallNiagara->SetPaused(true);
 	//GetRootComponent()->SetWorldScale3D(FVector::ZeroVector);
 	SetPhysicSimulation(false);
 	SetGravitySimulation(true);
@@ -239,14 +229,14 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
 	}
 }
 
-/** Allows us to call the callback when the Niagara animation is finished playing */
-void ABouncingBall::OnBallComplete(UNiagaraComponent* NiagaraComponent)
-{
-	BallNiagara->SetPaused(true);
-	State = EBoucingBallEnum::BBE_General;
-	CurrentCallback.ExecuteIfBound();
-	CurrentCallback.Unbind();
-}
+///** Allows us to call the callback when the Niagara animation is finished playing */
+//void ABouncingBall::OnBallComplete(UNiagaraComponent* NiagaraComponent)
+//{
+//	BallNiagara->SetPaused(true);
+//	State = EBoucingBallEnum::BBE_General;
+//	CurrentCallback.ExecuteIfBound();
+//	CurrentCallback.Unbind();
+//}
 
 void ABouncingBall::TriggerSlowdown( AWQAIEnemy* touchedActor )
 {

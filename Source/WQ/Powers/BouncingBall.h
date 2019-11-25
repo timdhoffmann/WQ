@@ -6,7 +6,6 @@ class USceneComponent;
 class UPrimitiveComponent;
 class UStaticMeshComponent;
 class USphereComponent;
-class UNiagaraComponent;
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Managers/EventManager.h"
@@ -69,10 +68,6 @@ protected:
 	/** Changes the collision profile */
 	void SetCollisionProfile(FName CollisionProfileName);
 
-	/** Allows us to call the callback when the Niagara animation is finished playing */
-	UFUNCTION()
-	void OnBallComplete(UNiagaraComponent* NiagaraComponent);
-
 	/** Allows us to damage enemies when hit while the ball is thrown */
 	UFUNCTION()
 	void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
@@ -81,10 +76,6 @@ protected:
 	/** Collider used for the ball */
 	UPROPERTY()
 	USphereComponent* BallCollider;
-
-	/** Collider used for the ball */
-	UPROPERTY()
-	UNiagaraComponent* BallNiagara;
 
 	/** State of the ball */
 	EBoucingBallEnum State;
