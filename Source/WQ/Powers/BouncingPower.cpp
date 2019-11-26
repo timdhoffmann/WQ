@@ -209,7 +209,10 @@ bool UBouncingPower::UpdateBallTargetting()
 	FHitResult Hit(1.f);
 	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
 	FVector End = Start + TelekinesisRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
-	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams);
+	FCollisionObjectQueryParams Objects;
+	Objects.AddObjectTypesToQuery(ECC_GameTraceChannel6);
+	World->SweepSingleByObjectType(Hit, Start, End, FQuat::Identity, Objects, Sphere, TelekinesisSweepParams);
+	//World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams);
 	
 	// If hit, then check that there is no environment between the player and the ball
 	FVector FinalLocation;
