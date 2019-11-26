@@ -2,6 +2,8 @@
 
 #pragma once
 
+class UMaterialInstanceDynamic;
+class UMeshComponent;
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Props.generated.h"
@@ -39,8 +41,8 @@ public:
 	/** Propulse physically */
 	void Propulse(FVector Direction, float Strength);
 
-	/** Set a material */
-	void SetMaterial(class UMaterial* Mat);
+	/** Set the material glowing, Duration of 0.0f means infinite */
+	void SetGlow(float Multiplier, float Duration = 0.0f, FLinearColor Color = FLinearColor::Black, bool bShouldRandPropulse = false);
 
 protected:
 	/** Called when the game starts or when spawned */
@@ -48,16 +50,29 @@ protected:
 
 protected:
 	/** Root mesh component of the props */
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Props")
-	class UMeshComponent* Mesh;
+	UPROPERTY()
+	UMeshComponent* Mesh;
 
 	/** Movement component of the props */
 	UPROPERTY()
 	class UPropsMovement* PropsMovementComponent;
 
-	/** Is currently flying towards a target ? */
-	bool bIsFlying;
+	/** Dynamic material instance to modify properties during runtime */
+	UPROPERTY()
+	UMaterialInstanceDynamic* MatInstanceDynamic;
 
-	/** Current target */
-	FVector FlyingTarget;
+	/** Tracks the glowing status */
+	bool bIsGlowing;
+	/** Tracks the glowing elapsed time */
+	float GlowElapsed;
+	/** Tracks the glowing current duration */
+	float GlowSpeed;
+	/** Tracks the glowing multiplier */
+	float InitialGlowMultiplier;
+	/** Tracks the glowing multiplier */
+	float TargetGlowMultiplier;
+	/** Tracks the initial Emissive Color of the material */
+	FLinearColor InitialEmissiveColor;
+	/** Tracks the target Emissive Color of the material */
+	FLinearColor TargetEmissiveColor;
 };

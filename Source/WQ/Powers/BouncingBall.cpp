@@ -5,10 +5,11 @@
 #include "Math/UnrealMathUtility.h"
 #include "StaticUtils.h"
 #include "Enemies/WQAIEnemy.h"
-
+#include "Components/SphereComponent.h" 
 #include "GameFramework/CharacterMovementComponent.h"
 #include "GameFramework/WorldSettings.h"
-#include "Kismet/GameplayStatics.h" 
+#include "Kismet/GameplayStatics.h"
+#include "Particles/ParticleSystemComponent.h"
 
 /** Sets default values */
 ABouncingBall::ABouncingBall()
@@ -17,11 +18,7 @@ ABouncingBall::ABouncingBall()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Default values
-	bIsBallResizing = false;
-	bIsBallTelekinesisd = false;
 	TargetScale = FVector::OneVector;
-	CurrentScalingStatus = 0.0f;
-	CurrentScalingSpeed = 0.0f;
 	Damage = 1;
 
     isCacac = false;
@@ -38,18 +35,26 @@ void ABouncingBall::BeginPlay()
 {
 	Super::BeginPlay();
 
-	// Get the ball mesh
-	TArray<UStaticMeshComponent*> Temp;
-	GetComponents<UStaticMeshComponent>(Temp);
+	// Set the initial state
+	State = EBoucingBallEnum::BBE_General;
+
+	// Get the ball collider
+	TArray<USphereComponent*> Temp;
+	GetComponents<USphereComponent>(Temp);
 	if (Temp.Num() > 0)
-		BallMesh = Temp[0];
+	{
+		BallCollider = Temp[0];
+	}
 
 	// Add the collision notification and disable the notifications for now
-	BallMesh->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
-	BallMesh->SetNotifyRigidBodyCollision(false);
+	BallCollider->OnComponentHit.AddDynamic(this, &ABouncingBall::OnBallHit);
+	BallCollider->SetNotifyRigidBodyCollision(false);
 	
-	// Activate all elements with zero scale, and disable physics
-	SetBallActive(true);
+	// Activate the collider and reset the ball
+	if (IsValid(BallCollider))
+	{
+		BallCollider->SetActive(true);
+	}
 	ResetBall();
 }
 
@@ -58,28 +63,15 @@ void ABouncingBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (bIsBallResizing)
-	{
-		CurrentScalingStatus = FMath::Min(1.0f, CurrentScalingStatus + DeltaTime * CurrentScalingSpeed);
-
-		GetRootComponent()->SetWorldScale3D(FMath::Lerp<FVector>(InitialScale, TargetScale, CurrentScalingStatus));
-
-		if (CurrentScalingStatus >= 1.0f)
-		{
-			CurrentCallback.ExecuteIfBound();
-			bIsBallResizing = false;
-			CurrentCallback.Unbind();
-		}
-	}
-	else if (bIsBallTelekinesisd)
+	if (State == EBoucingBallEnum::BBE_Telekinesis)
 	{
 		FVector Direction = TelekinesisTarget->GetComponentLocation() - GetRootComponent()->GetComponentLocation();
 
 		// Stop if we are near enough the destination
-		if (Direction.SizeSquared() < 1.0f)
+		if (Direction.SizeSquared() < 100.0f)
 		{
 			// Change needed parameters
-			bIsBallTelekinesisd = false;
+			State = EBoucingBallEnum::BBE_General;
 			SetPhysicSimulation(false);
 			SetGravitySimulation(true);
 			SetCollisionProfile(TEXT("BallHeld"));
@@ -96,43 +88,57 @@ void ABouncingBall::Tick(float DeltaTime)
 	}
 }
 
-/** Changes the scale of the ball elements in a given time */
-void ABouncingBall::ChangeScale(FVector InitialScale, FVector FinalScale, float Duration, FSimpleCallback Callback)
+/** Launches the charge of the ball */
+void ABouncingBall::Charge(FSimpleCallback Callback)
 {
-	this->InitialScale = InitialScale;
-	this->TargetScale = FinalScale;
-	bIsBallResizing = true;
+	State = EBoucingBallEnum::BBE_Charging;
 
-	CurrentScalingSpeed = 1 / Duration;
-
-	// Takes the hypothesis that all dimensions will be scaled the same
-	FVector CurrentScale = GetRootComponent()->GetComponentScale();
-	CurrentScalingStatus = FMath::Abs((CurrentScale.X - InitialScale.X) / (TargetScale.X - InitialScale.X));
+	// Launch the animation and add the end of charge event
+	ChargeParticleSystem->Activate(true);
+	ChargeParticleSystem->OnSystemFinished.AddDynamic(this, &ABouncingBall::OnChargeComplete);
 
 	// Update the new resizing callback
 	CurrentCallback.Unbind();
 	CurrentCallback = Callback;
 }
 
+/** Stops the charge */
+void ABouncingBall::StopCharge()
+{
+	ChargeParticleSystem->OnSystemFinished.RemoveDynamic(this, &ABouncingBall::OnChargeComplete);
+	ResetBall();
+}
+
 /** Activate/deactivate the ball */
 void ABouncingBall::SetBallActive(bool bState)
 {
-	if (BallMesh != nullptr)
+	if (IsValid(ChargeParticleSystem))
 	{
-		BallMesh->SetActive(bState);
-		BallMesh->SetHiddenInGame(!bState);
+		if (bState)
+		{
+			ChargeParticleSystem->Activate(true);
+		}
+		else
+		{
+			ChargeParticleSystem->Deactivate();
+		}
+	}
+
+	if (IsValid(BallCollider))
+	{
+		BallCollider->SetActive(bState);
 	}
 }
 
 /** Changes the simulation physics status */
 void ABouncingBall::SetPhysicSimulation(bool bState)
 {
-	if (BallMesh != nullptr)
+	if (IsValid(BallCollider))
 	{
-		BallMesh->SetSimulatePhysics(bState);
+		BallCollider->SetSimulatePhysics(bState);
 		if (bState)
 		{
-			BallMesh->WakeAllRigidBodies();
+			BallCollider->WakeAllRigidBodies();
 		}
 	}
 }
@@ -140,18 +146,18 @@ void ABouncingBall::SetPhysicSimulation(bool bState)
 /** Changes the gravity physics status */
 void ABouncingBall::SetGravitySimulation(bool bState)
 {
-	if (BallMesh != nullptr)
+	if (IsValid(BallCollider))
 	{
-		BallMesh->SetEnableGravity(bState);
+		BallCollider->SetEnableGravity(bState);
 	}
 }
 
 /** Changes the collision profile */
 void ABouncingBall::SetCollisionProfile(FName CollisionProfileName)
 {
-	if (BallMesh != nullptr)
+	if (IsValid(BallCollider))
 	{
-		BallMesh->SetCollisionProfileName(CollisionProfileName);
+		BallCollider->SetCollisionProfileName(CollisionProfileName);
 	}
 }
 
@@ -160,16 +166,16 @@ void ABouncingBall::Propulse(FVector Direction, float Strength)
 {
 	DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
 
-	if (BallMesh != nullptr)
+	if (IsValid(BallCollider))
 	{
 		// Physics changes
 		SetCollisionProfile(TEXT("Ball"));
 		SetPhysicSimulation(true);
 		//SetGravitySimulation(false);
-		BallMesh->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * BallMesh->GetMassScale(), NAME_None, true);
+		BallCollider->AddForce(UStaticUtils::GetSafeNormal(Direction) * Strength * BallCollider->GetMassScale(), NAME_None, true);
 
 		// Activate the OnComponentHit call
-		BallMesh->SetNotifyRigidBodyCollision(true);
+		BallCollider->SetNotifyRigidBodyCollision(true);
 	}
 }
 
@@ -177,14 +183,14 @@ void ABouncingBall::Propulse(FVector Direction, float Strength)
 void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength, FSimpleCallback Callback)
 {
 	// Deactivate the OnComponentHit call
-	BallMesh->SetNotifyRigidBodyCollision(false);
+	BallCollider->SetNotifyRigidBodyCollision(false);
 
 	// Deactivate Physics & Gravity
 	SetPhysicSimulation(false);
 	SetGravitySimulation(false);
 
 	// Set the elements of the telekinesis, the propulsion will take place in Tick
-	bIsBallTelekinesisd = true;
+	State = EBoucingBallEnum::BBE_Telekinesis;
 	TelekinesisTarget = TargetComponent;
 	TelekinesisStrength = Strength;
 
@@ -199,7 +205,10 @@ void ABouncingBall::GetBallBack(USceneComponent* TargetComponent, float Strength
 /** Reset the ball position and scale */
 void ABouncingBall::ResetBall()
 {
-	GetRootComponent()->SetWorldScale3D(FVector::ZeroVector);
+	ChargeParticleSystem->DeactivateSystem();
+	ChargeParticleSystem->KillParticlesForced();
+	FinishedBallMesh->SetActive(false);
+	FinishedBallMesh->SetHiddenInGame(true);
 	SetPhysicSimulation(false);
 	SetGravitySimulation(true);
 	SetCollisionProfile(TEXT("BallHeld"));
@@ -216,7 +225,7 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
         Enemy->ApplyDamage( Damage );
 
         UCharacterMovementComponent* characterMovement = Enemy->GetCharacterMovement();
-        characterMovement->AddImpulse( UStaticUtils::GetSafeNormal( NormalImpulse ) * 1000000.0f * BallMesh->GetMassScale() );
+        characterMovement->AddImpulse( UStaticUtils::GetSafeNormal( NormalImpulse ) * 1000000.0f * BallCollider->GetMassScale() );
 
         FTimerDelegate TimerDel;
         TimerDel.BindUFunction( this, FName( "TriggerSlowdown" ), Enemy );
@@ -224,7 +233,7 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
         isCacac = true;
 
         if ( SlowmoEnabled ) {
-            velocityBackup = BallMesh->GetPhysicsLinearVelocity();
+            velocityBackup = BallCollider->GetPhysicsLinearVelocity();
             
             UE_LOG( LogTemp, Error, TEXT( "%f %f %f" ), velocityBackup.X, velocityBackup.Y, velocityBackup.Z );
 
@@ -232,11 +241,26 @@ void ABouncingBall::OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, 
             SetPhysicSimulation( true );
 
             SetGravitySimulation( false );
-            BallMesh->SetPhysicsLinearVelocity( velocityBackup * 0.0000001f );
+            BallCollider->SetPhysicsLinearVelocity( velocityBackup * 0.0000001f );
 
             GetWorld()->GetTimerManager().SetTimer( SlowDownTriggerTimerHandle, TimerDel, SlowmoDelay, false );
         }
 	}
+}
+
+/** Allows us to call the callback when the Niagara animation is finished playing */
+void ABouncingBall::OnChargeComplete(UParticleSystemComponent* ParticleSystem)
+{
+	// Remove the notification
+	ChargeParticleSystem->OnSystemFinished.RemoveDynamic(this, &ABouncingBall::OnChargeComplete);
+	// Deactivate the particles and show the mesh
+	ChargeParticleSystem->Deactivate();
+	FinishedBallMesh->SetActive(true);
+	FinishedBallMesh->SetHiddenInGame(false);
+	// Change the state and call the callback
+	State = EBoucingBallEnum::BBE_General;
+	CurrentCallback.ExecuteIfBound();
+	CurrentCallback.Unbind();
 }
 
 void ABouncingBall::TriggerSlowdown( AWQAIEnemy* touchedActor )
@@ -245,7 +269,7 @@ void ABouncingBall::TriggerSlowdown( AWQAIEnemy* touchedActor )
     if ( IsInSlowDown ) {
         touchedActor->SetTimeDilation( 1.0f );
 
-        BallMesh->SetPhysicsLinearVelocity( velocityBackup );
+        BallCollider->SetPhysicsLinearVelocity( velocityBackup );
         SetGravitySimulation( true );
 
         isCacac = false;

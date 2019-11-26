@@ -15,7 +15,6 @@
 #include "Managers/EventManager.h"
 #include "Managers/PauseManager.h"
 #include "Math/UnrealMathUtility.h"
-#include "PhysicsEngine/PhysicsHandleComponent.h"
 #include "Powers/Power.h"
 #include "GameFramework/CharacterMovementComponent.h"
 
@@ -56,6 +55,7 @@ AWQCharacter::AWQCharacter()
 	RunningSpeed = 1200.0f;
 	RunningAcceleration = 5096.0f;
 	ElapsedFOV = 0.0f;
+	bShouldRunInputBeConsumed = false;
 }
 
 void AWQCharacter::BeginPlay()
@@ -65,9 +65,6 @@ void AWQCharacter::BeginPlay()
 
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Sight::StaticClass(), this );
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Hearing::StaticClass(), this );
-
-	//// Show or hide the two versions of the gun based on whether or not we're using motion controllers.
-	//Mesh1P->SetHiddenInGame(false, true);
 
 	// Get all the powers attached and sort them by identifier
 	GetComponents<UPower>(Powers);
@@ -91,7 +88,7 @@ void AWQCharacter::BeginPlay()
 	LastLocation = GetActorLocation();
 	CurrentFootstepsInterval = NormalFootstepsInterval;
 
-	// Initialize the Game Instance
+	// Initialize the Game Instance ref
 	GameInstance = Cast<UWQGameInstance>(GetGameInstance());
 	if (!IsValid(GameInstance))
 	{
@@ -115,7 +112,17 @@ void AWQCharacter::BeginPlay()
 
 void AWQCharacter::Tick(float DeltaTime)
 {
-	if (GetVelocity().SizeSquared() != 0.0f) // If we are moving
+	// Consume the run input if needed
+	if (bShouldRunInputBeConsumed && !GetCharacterMovement()->IsFalling())
+	{
+		bIsRunning = true;
+		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+		GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
+		HeadbobShake = RunningHeadbobShake;
+	}
+
+	FVector HorizontalVelocity = FVector(GetVelocity().X, GetVelocity().Y, 0.0f);
+	if (HorizontalVelocity.SizeSquared() != 0.0f) // If we have horizontal movement
 	{
 		// Running FOV change logic
 		if (bIsRunning)
@@ -145,7 +152,7 @@ void AWQCharacter::Tick(float DeltaTime)
 			}
 		}
 	}
-	else // Else if we are not moving
+	else // Else if we are not moving horizontally
 	{
 		if (!bLastFootstepPlayed)
 		{
@@ -203,6 +210,10 @@ void AWQCharacter::SetupPlayerInputComponent(class UInputComponent* PlayerInputC
 	PlayerInputComponent->BindAction("Fire", IE_Pressed, this, &AWQCharacter::FirePressed);
 	PlayerInputComponent->BindAction("Fire", IE_Released, this, &AWQCharacter::FireReleased);
 
+	// Bind summon event
+	PlayerInputComponent->BindAction("Summon", IE_Pressed, this, &AWQCharacter::SummonPressed);
+	PlayerInputComponent->BindAction("Summon", IE_Released, this, &AWQCharacter::SummonReleased);
+
     // Bind misc event
     PlayerInputComponent->BindAction( "Pause", IE_Pressed, this, &AWQCharacter::PauseTriggered ).bExecuteWhenPaused = true;
 
@@ -233,6 +244,18 @@ void AWQCharacter::FirePressed()
 void AWQCharacter::FireReleased()
 {
 	FireReleasedEvent.Broadcast();
+}
+
+/** Summon pressed, called by the input */
+void AWQCharacter::SummonPressed()
+{
+	SummonPressedEvent.Broadcast();
+}
+
+/** Summon released, called by the input */
+void AWQCharacter::SummonReleased()
+{
+	SummonReleasedEvent.Broadcast();
 }
 
 /** Switching power with the mouse wheel up, called by the input */
@@ -268,8 +291,8 @@ void AWQCharacter::MoveForward(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorForwardVector(), Value);
 
-		// Try and play the headbob if specified
-		if (HeadbobShake != nullptr)
+		// Try and play the headbob if not jumping specified
+		if (!GetCharacterMovement()->IsFalling() && HeadbobShake != nullptr)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
@@ -283,8 +306,8 @@ void AWQCharacter::MoveRight(float Value)
 		// add movement in that direction
 		AddMovementInput(GetActorRightVector(), Value);
 
-		// Try and play the headbob if specified
-		if (HeadbobShake != nullptr)
+		// Try and play the headbob if not jumping specified
+		if (!GetCharacterMovement()->IsFalling() && HeadbobShake != nullptr)
 		{
 			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
@@ -296,6 +319,7 @@ void AWQCharacter::Run()
 {
 	if (bIsRunning)
 	{
+		bShouldRunInputBeConsumed = false;
 		bIsRunning = false;
 		GetCharacterMovement()->MaxWalkSpeed = WalkingSpeed;
 		GetCharacterMovement()->MaxAcceleration = WalkingAcceleration;
@@ -303,10 +327,18 @@ void AWQCharacter::Run()
 	}
 	else
 	{
-		bIsRunning = true;
-		GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
-		GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
-		HeadbobShake = RunningHeadbobShake;
+		if (GetCharacterMovement()->IsFalling())
+		{
+			bShouldRunInputBeConsumed = true;
+		}
+		else
+		{
+			bShouldRunInputBeConsumed = false;
+			bIsRunning = true;
+			GetCharacterMovement()->MaxWalkSpeed = RunningSpeed;
+			GetCharacterMovement()->MaxAcceleration = RunningAcceleration;
+			HeadbobShake = RunningHeadbobShake;
+		}
 	}
 }
 

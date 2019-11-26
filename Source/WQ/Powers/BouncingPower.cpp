@@ -1,6 +1,5 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "BouncingPower.h"
 #include "WQCharacter.h"
 #include "BouncingBall.h"
@@ -17,9 +16,6 @@ UBouncingPower::UBouncingPower()
 
 	// Default values
 	Identifier = -1;
-	BallCreationTime = 2.0f;
-	BallUnchargingTime = 0.2f;
-	FinalScale = FVector(0.3f, 0.3f, 0.3f);
 	ProjectionForce = 800000.0f;
 	TelekinesisRadius = 100.0f;
 	TelekinesisRange = 10000.0f;
@@ -52,19 +48,10 @@ void UBouncingPower::BeginPlay()
 {
 	Super::BeginPlay();
 
+	// Spawn the ball
 	if (BouncingBallBP)
 	{
-		UWorld* const World = GetWorld();
-		if (World)
-		{
-			BouncingBall = World->SpawnActor<ABouncingBall>(BouncingBallBP, Character->GetFireSceneComponent()->GetComponentLocation(), Character->GetActorRotation()); // The bouncing ball starts disabled
-			BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
-			BouncingBall->SetDamage(BallDamage);
-            BouncingBall->SetSlowmoState( SlowmoEnabled );
-            BouncingBall->SetSlowmoDelay( SlowmoDelay );
-            BouncingBall->SetSlowmoDuration( SlowmoDuration );
-            BouncingBall->SetSlowmoLeverage( SlowmoLeverage );
-		}
+		SpawnBall();
 	}
 	else
 	{
@@ -89,6 +76,22 @@ void UBouncingPower::BeginPlay()
 
 	// Initialize the CurrentProjectionTime
 	CurrentProjectionTime = 0.0f;
+}
+
+/** Spawn the ball */
+void UBouncingPower::SpawnBall()
+{
+	UWorld* const World = GetWorld();
+	if (World)
+	{
+		BouncingBall = World->SpawnActor<ABouncingBall>(BouncingBallBP, Character->GetFireSceneComponent()->GetComponentLocation(), Character->GetActorRotation()); // The bouncing ball starts disabled
+		BouncingBall->AttachToComponent(Character->GetFireSceneComponent(), FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+		BouncingBall->SetDamage(BallDamage);
+		BouncingBall->SetSlowmoState(SlowmoEnabled);
+		BouncingBall->SetSlowmoDelay(SlowmoDelay);
+		BouncingBall->SetSlowmoDuration(SlowmoDuration);
+		BouncingBall->SetSlowmoLeverage(SlowmoLeverage);
+	}
 }
 
 /** Behaviour when the power is activated */
@@ -144,8 +147,12 @@ void UBouncingPower::PowerPressed()
 	if (BounceState == EBounceEnum::BE_BallUncharging)
 	{
 		BounceState = EBounceEnum::BE_BallCharging;
-		if (BouncingBall)
-			BouncingBall->ChangeScale(FVector::ZeroVector, FinalScale, BallCreationTime, FSimpleCallback::CreateLambda([&] { BounceState = EBounceEnum::BE_BallReady; }));
+		// Spawn a ball if the previous one has disappeared
+		if (!IsValid(BouncingBall))
+		{
+			SpawnBall();
+		}
+		BouncingBall->Charge(FSimpleCallback::CreateLambda([&] { BounceState = EBounceEnum::BE_BallReady; }));
 	}
 	// Else try to get the ball back if it's thrown
 	else if (BounceState == EBounceEnum::BE_BallThrown)
@@ -165,13 +172,15 @@ void UBouncingPower::PowerReleased()
 	if (BounceState == EBounceEnum::BE_BallCharging)
 	{
 		BounceState = EBounceEnum::BE_BallUncharging;
-		if (BouncingBall)
-			BouncingBall->ChangeScale(FinalScale, FVector::ZeroVector, BallUnchargingTime, FSimpleCallback::CreateLambda([] { }));
+		if (IsValid(BouncingBall))
+		{
+			BouncingBall->StopCharge();
+		}
 	}
 	// Else if the ball is ready, throw it
 	else if (BounceState == EBounceEnum::BE_BallReady)
 	{
-		if (BouncingBall)
+		if (IsValid(BouncingBall))
 		{
 			// Trace to see what we should hit
 			FHitResult Hit(1.f);
@@ -200,7 +209,10 @@ bool UBouncingPower::UpdateBallTargetting()
 	FHitResult Hit(1.f);
 	FVector Start = UGameplayStatics::GetPlayerCameraManager(World, 0)->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
 	FVector End = Start + TelekinesisRange * UGameplayStatics::GetPlayerCameraManager(World, 0)->GetActorForwardVector();
-	World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams);
+	FCollisionObjectQueryParams Objects;
+	Objects.AddObjectTypesToQuery(ECC_GameTraceChannel6);
+	World->SweepSingleByObjectType(Hit, Start, End, FQuat::Identity, Objects, Sphere, TelekinesisSweepParams);
+	//World->SweepSingleByChannel(Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams);
 	
 	// If hit, then check that there is no environment between the player and the ball
 	FVector FinalLocation;
@@ -227,28 +239,28 @@ bool UBouncingPower::UpdateBallTargetting()
 
 void UBouncingPower::UpdateAuraLogic()
 {
-    // Do an initial sphere sweep with only the ball trace channel
-    UWorld* const World = GetWorld();
-    FHitResult Hit( 1.f );
-    FVector Start = UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
-    FVector End = Start + AuraRadius * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
-    World->SweepSingleByChannel( Hit, Start, End, FQuat::Identity, ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams );
+    //// Do an initial sphere sweep with only the ball trace channel
+    //UWorld* const World = GetWorld();
+    //FHitResult Hit( 1.f );
+    //FVector Start = UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetCameraLocation() + 10.0f * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
+    //FVector End = Start + AuraRadius * UGameplayStatics::GetPlayerCameraManager( World, 0 )->GetActorForwardVector();
+    //World->SweepSingleByChannel( Hit, Start, End, FQuat::Identity,ECC_GameTraceChannel10, Sphere, TelekinesisSweepParams );
 
-    // If hit, then check that there is no environment between the player and the ball
-    FVector FinalLocation;
-    if ( Hit.IsValidBlockingHit() ) {
-        FVector FinalLocation = Hit.Location;
-        DrawDebugSphere( World, FinalLocation, AuraRadius, 32, FColor::White );
+    //// If hit, then check that there is no environment between the player and the ball
+    //FVector FinalLocation;
+    //if ( Hit.IsValidBlockingHit() ) {
+    //    FVector FinalLocation = Hit.Location;
+    //    DrawDebugSphere( World, FinalLocation, AuraRadius, 32, FColor::White );
 
-        // Raycast to the environment to check that there is nothing blocking
-        Hit.Reset( 1.f, false );
-        World->LineTraceSingleByChannel( Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams );
-        FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
+    //    // Raycast to the environment to check that there is nothing blocking
+    //    Hit.Reset( 1.f, false );
+    //    World->LineTraceSingleByChannel( Hit, Start, FinalLocation, ECollisionChannel::ECC_GameTraceChannel2, SweepParams );
+    //    FVector BlockingLocation = Hit.IsValidBlockingHit() ? Hit.Location : Hit.TraceEnd;
 
-        if ( FVector::DistSquared( Character->GetActorLocation(), FinalLocation ) <= FVector::DistSquared( Character->GetActorLocation(), BlockingLocation ) ) {
-            Hit.Actor->SetActorHiddenInGame( true );
-        }
-    }
+    //    if ( FVector::DistSquared( Character->GetActorLocation(), FinalLocation ) <= FVector::DistSquared( Character->GetActorLocation(), BlockingLocation ) ) {
+    //        Hit.Actor->SetActorHiddenInGame( true );
+    //    }
+    //}
 }
 
 /** Function called on telekinesis finished */

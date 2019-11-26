@@ -16,4 +16,14 @@ class WQ_API AWQAIEnemy : public AWQAICharacter
 	
 public:
     inline void SetTimeDilation( const float dilationFactor ) { CustomTimeDilation = dilationFactor; }
+
+protected:
+    /** Max distance between harasser and its target */
+    int32       AttackRange;
+
+    /** Move speed during harasser attack */
+    int32       DashSpeed;
+
+    /** Time where the harasser is frozen after an attack */
+    int32       RecoveryTime;
 };

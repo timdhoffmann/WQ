@@ -1,7 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "WQAICharacter.h"
+#include "WQAISpawner.h"
+
+#include "WQ/Managers/WQGameInstance.h"
+#include "WQ/Managers/SpawnDirector.h"
 
 /** Sets default values */
 AWQAICharacter::AWQAICharacter()
@@ -10,6 +12,7 @@ AWQAICharacter::AWQAICharacter()
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Default values
+    SpawnOrigin = nullptr;
 	InitialHealthPoints = 1;
 }
 
@@ -51,6 +54,11 @@ void AWQAICharacter::ApplyDamage(const int Damage)
     
 	if (HealthPoints <= 0)
 	{
+        // If the current AI character has been spawned from a spawner, notify its death in order to update the spawner ticket count
+        if ( SpawnOrigin != nullptr ) {
+            reinterpret_cast< UWQGameInstance* >( GetGameInstance() )->SpawnDirector()->NumberHarasser--;
+        }
+
 		// TODO: Death logic
 		this->Destroy();
 	}
