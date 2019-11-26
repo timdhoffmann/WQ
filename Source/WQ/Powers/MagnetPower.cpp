@@ -14,6 +14,7 @@
 #include "Managers/WQGameInstance.h"
 #include "Managers/AudioManager.h"
 #include "Math/UnrealMathUtility.h"
+#include "Golems/WQAIGolem.h"
 
 /** Sets default values for this component's properties */
 UMagnetPower::UMagnetPower()
@@ -40,12 +41,18 @@ UMagnetPower::UMagnetPower()
 	DeniedSummonGlowDuration = 0.3f;
 	DeniedSummonGlowMultiplier = 200.0f;
 	SummonCheckboxExtent = FVector(50.0f, 50.0f, 20.0f);
+	SummonAssemblySpeed = 10.0f;
 
-	/// Grabs the references of the BP, here so that we counter the infamous UE4 bug where the references are lost upon reopening
+	/// Grabs the references of the BPs, here so that we counter the infamous UE4 bug where the references are lost upon reopening
 	static ConstructorHelpers::FObjectFinder<UClass> MagnetIndicatorClassFinder(TEXT("Class'/Game/Blueprints/Powers/BP_MagnetIndicator.BP_MagnetIndicator_C'"));
 	if (MagnetIndicatorClassFinder.Object)
 	{
 		MagnetIndicatorBP = MagnetIndicatorClassFinder.Object;
+	}
+	static ConstructorHelpers::FObjectFinder<UClass> GolemClassFinder(TEXT("Class'/Game/_Dev/Zeb/BP_TestGolem.BP_TestGolem.BP_TestGolem_C'"));
+	if (GolemClassFinder.Object)
+	{
+		GolemBP = GolemClassFinder.Object;
 	}
 }
 
@@ -64,7 +71,7 @@ void UMagnetPower::BeginPlay()
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 
 	// Spawn the indicator
-	if (MagnetIndicatorBP)
+	if (IsValid(MagnetIndicatorBP))
 	{
 		UWorld* const World = GetWorld();
 		if (World)
@@ -139,32 +146,8 @@ void UMagnetPower::PowerReleased()
 	// Deactivate the power only if it's already activated
 	if (MagnetState != EMagnetEnum::ME_None)
 	{
-		MagnetState = EMagnetEnum::ME_None;
-
-		Character->ClearAllPhysicHandle();
-
-		for (AProps* Prop : MagnetizedProps)
-		{
-			if (IsValid(Prop))
-			{
-				Prop->FlyStop();
-				//Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
-				
-				// Make the prop unglow
-				Prop->SetGlow(0.0f);
-
-				// Stop the ambiance sound
-				if (IsValid(GameInstance))
-				{
-					GameInstance->AudioManager()->SetPropMagnetizedAmbiance(false, Prop);
-				}
-			}
-		}
+		StopMagnet();
 		MagnetizedProps.Empty();
-		if (MagnetIndicator)
-		{
-			MagnetIndicator->SetActorActive(false);
-		}
 	}
 }
 
@@ -197,7 +180,25 @@ void UMagnetPower::SummonReleased()
 		// Check if we can summon
 		if (UpdateSummonTargetting())
 		{
-			// TODO: Summoning logic
+			// Spawn a golem
+			AWQAIGolem* Golem = nullptr;
+			if (IsValid(GolemBP))
+			{
+				Golem = GetWorld()->SpawnActor<AWQAIGolem>(GolemBP, SummoningLocation, Character->GetActorRotation());
+			}
+			// Attach the props
+			if (IsValid(Golem))
+			{
+				for (int i = 0; i < MagnetizedProps.Num(); ++i)
+				{
+					MagnetizedProps[i]->AssembleGolem(Golem->GetMesh(), FName(*FString::FromInt(i)), SummonAssemblySpeed);
+				}
+				MagnetizedProps.Empty();
+			}
+		}
+		else
+		{
+			//TODO
 		}
 	}
 }
@@ -218,7 +219,7 @@ void UMagnetPower::UpdateMagnet()
 	FVector FinalLocation = Hit.bBlockingHit ? Hit.Location : Hit.TraceEnd;
 
 	// Update the indicator location and rotation
-	if (MagnetIndicator)
+	if (IsValid(MagnetIndicator))
 	{
 		MagnetIndicator->SetActorLocation(FinalLocation);
 		FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(FinalLocation, Character->GetActorLocation());
@@ -226,10 +227,7 @@ void UMagnetPower::UpdateMagnet()
 	}
 
 	// Update the physic handles location
-	for (UPhysicsHandleComponent* PH : Character->GetPhysicHandles())
-	{
-		PH->SetTargetLocation(FinalLocation);
-	}
+	Character->SetPhysicHandlesLocation(FinalLocation);
 	DrawDebugSphere(World, FinalLocation, SphereRadius, 32, FColor::White);
 
 	// Find all props in a new sweep based on the hit of the previous one
@@ -318,7 +316,6 @@ bool UMagnetPower::UpdateSummonTargetting()
 		FVector StartSummonSweep = Hit.Location + FVector(0.0f, 0.0f, SummonCheckboxExtent.Z);
 		FRotator LookAtRotator = UKismetMathLibrary::FindLookAtRotation(StartSummonSweep, Character->GetActorLocation());
 		LookAtRotator.Pitch = 0.f; // Remove any pitch
-		FVector SummonLocation;
 
 		//DrawDebugBoxTraceMulti(World, StartSummonSweep, StartSummonSweep + FVector::UpVector, SummonCheckboxExtent / 2.0f, LookAtRotator, EDrawDebugTrace::ForOneFrame, true, SummonHits, FLinearColor::Blue, FLinearColor::Red, 0.0f);
 		//if (World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector * 0.1f, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams ))
@@ -326,14 +323,46 @@ bool UMagnetPower::UpdateSummonTargetting()
 		if (!World->SweepMultiByObjectType(SummonHits, StartSummonSweep, StartSummonSweep + FVector::UpVector, LookAtRotator.Quaternion(), Params, SummonCheckbox, SweepParams))
 		{
 			// TODO: Place VFX Green area of spawning
+			SummoningLocation = Hit.Location; // Update the summoning location
 			return true;
 		}
 		
-		//DrawDebugBox(World, SummonLocation, SummonCheckboxExtent, LookAtRotator.Quaternion(), FColor::Orange);
-		//DrawDebugCapsule(World, SummonLocation, 50.0f, 100.0f, LookAtRotator.Quaternion(), FColor::Orange);
+		//DrawDebugBox(World, SummoningLocation, SummonCheckboxExtent, LookAtRotator.Quaternion(), FColor::Orange);
+		//DrawDebugCapsule(World, SummoningLocation, 50.0f, 100.0f, LookAtRotator.Quaternion(), FColor::Orange);
 	}
 
 	// TODO: Change VFX area to red
 	return false;
+}
+
+/** Removes all magnetized props */
+void UMagnetPower::StopMagnet()
+{
+	MagnetState = EMagnetEnum::ME_None;
+
+	Character->ClearAllPhysicHandle();
+
+	for (AProps* Prop : MagnetizedProps)
+	{
+		if (IsValid(Prop))
+		{
+			Prop->FlyStop();
+			//Prop->Propulse(Character->GetFirstPersonCameraComponent()->GetForwardVector(), PropulsionForce);
+
+			// Make the prop unglow
+			Prop->SetGlow(0.0f);
+
+			// Stop the ambiance sound
+			if (IsValid(GameInstance))
+			{
+				GameInstance->AudioManager()->SetPropMagnetizedAmbiance(false, Prop);
+			}
+		}
+	}
+
+	if (MagnetIndicator)
+	{
+		MagnetIndicator->SetActorActive(false);
+	}
 }
 

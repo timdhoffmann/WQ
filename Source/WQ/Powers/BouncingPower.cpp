@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "DrawDebugHelpers.h"
 #include "ConstructorHelpers.h"
+#include "Managers/WQGameInstance.h"
+#include "Managers/ShakeManager.h"
 
 /** Sets default values for this component's properties */
 UBouncingPower::UBouncingPower()
@@ -22,6 +24,10 @@ UBouncingPower::UBouncingPower()
 	TelekinesisForce = 50.0f;
 	ProjectionTimeLimit = 3.0f;
 	BallDamage = 1;
+
+	ProjectionSlowDuration = 0.2f;
+	ProjectionSlowAmount = 0.1f;
+
     SlowmoEnabled = true;
     SlowmoDelay = 0.3f;
     SlowmoDuration = 1.0f;
@@ -49,7 +55,7 @@ void UBouncingPower::BeginPlay()
 	Super::BeginPlay();
 
 	// Spawn the ball
-	if (BouncingBallBP)
+	if (IsValid(BouncingBallBP))
 	{
 		SpawnBall();
 	}
@@ -67,8 +73,10 @@ void UBouncingPower::BeginPlay()
 	TelekinesisSweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 	TelekinesisSweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
-	if (BouncingBall)
+	if (IsValid(BouncingBall))
+	{
 		SweepParams.AddIgnoredActor(BouncingBall); // Ignore the ball only for the sphere
+	}
 
     AuraSphere = FCollisionShape::MakeSphere( AuraRadius );
     AuraSweepParams = FCollisionQueryParams();
@@ -191,14 +199,26 @@ void UBouncingPower::PowerReleased()
 
 			// Propulse the ball
 			FVector Target = Hit.IsValidBlockingHit() ? Hit.ImpactPoint : Hit.TraceEnd;
-			FVector Direction = Target - BouncingBall->GetRootComponent()->GetComponentLocation();
-			BouncingBall->Propulse(Direction, ProjectionForce);
+			PropulsionDirection = Target - BouncingBall->GetRootComponent()->GetComponentLocation();
 
 			// Change the state parameters
 			BounceState = EBounceEnum::BE_BallThrown;
 			CurrentProjectionTime = 0.0f;
+
+			// Launch the effects: Slowmotion
+			UGameplayStatics::SetGlobalTimeDilation(World, ProjectionSlowAmount);
+			FTimerHandle Handle;
+			World->GetTimerManager().SetTimer(Handle, this, &UBouncingPower::PropulseBallAfterEffects, ProjectionSlowDuration * ProjectionSlowAmount, false);
 		}
 	}
+}
+
+/** Propulse the ball after the game feel effects are done */
+void UBouncingPower::PropulseBallAfterEffects()
+{
+	UGameplayStatics::SetGlobalTimeDilation(GetWorld(), 1.0f);
+	GameInstance->ShakeManager()->PlayBallPropulsion();
+	BouncingBall->Propulse(PropulsionDirection, ProjectionForce);
 }
 
 /** Update the ball targetting when the ball is thrown */
@@ -218,7 +238,7 @@ bool UBouncingPower::UpdateBallTargetting()
 	FVector FinalLocation;
 	if (Hit.IsValidBlockingHit())
 	{
-		FVector FinalLocation = Hit.Location;
+		FinalLocation = Hit.Location;
 		DrawDebugSphere(World, FinalLocation, TelekinesisRadius, 32, FColor::White);
 
 		// Raycast to the environment to check that there is nothing blocking
