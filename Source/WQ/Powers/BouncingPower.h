@@ -40,6 +40,9 @@ protected:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
+	/** Spawn a Bouncing ball */
+	void SpawnBall();
+
 	/** Behaviour when the power is activated */
 	virtual void PowerPressed() override;
 

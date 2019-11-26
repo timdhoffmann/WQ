@@ -5,8 +5,10 @@
 #include "AudioManager.h"
 #include "EventManager.h"
 #include "PauseManager.h"
-#include "Kismet/GameplayStatics.h"
+#include "SpawnDirector.h"
 #include "WQCharacter.h"
+
+#include "Kismet/GameplayStatics.h"
 
 /** Accessor for C++ & BP */
  // Singleton-like accessor. I only use this as a workaround for PIE
@@ -37,6 +39,16 @@ UPauseManager* UWQGameInstance::PauseManager()
     }
 
     return PauseManagerInstance;
+}
+
+/** Accessor for C++ & BP */
+USpawnDirector* UWQGameInstance::SpawnDirector()
+{
+    if ( !IsValid( SpawnDirectorInstance ) ) {
+        SpawnDirectorInstance = NewObject<USpawnDirector>( this, FName( "SpawnDirector" ) );
+    }
+
+    return SpawnDirectorInstance;
 }
 
 /** This is where we will clean up, as the game is shut down */

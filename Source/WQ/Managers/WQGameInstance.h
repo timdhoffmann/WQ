@@ -5,6 +5,7 @@
 class AAudioManager;
 class UEventManager;
 class UPauseManager;
+class USpawnDirector;
 
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
@@ -26,6 +27,8 @@ public:
 	UEventManager* EventManager();
     UFUNCTION( BlueprintPure, Category = Managers)
     UPauseManager* PauseManager();
+    UFUNCTION( BlueprintPure, Category = Managers)
+    USpawnDirector* SpawnDirector();
 
 protected:
 	/** This is where we will clean up, as the game is shut down */
@@ -37,10 +40,12 @@ protected:
 	// If Transient, it doesn't get serialized itself. Will be nulled when the
 	// game starts. Initialization happens later by hand.
 	//UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Managers")
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Managers)
-	TSubclassOf<AAudioManager> AudioManagerBP;
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Managers )
+    TSubclassOf<AAudioManager> AudioManagerBP;
     UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Managers" )
     TSubclassOf<UPauseManager> PauseManagerBP;
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Managers" )
+    TSubclassOf<USpawnDirector> SpawnDirectorBP;
 
 	/** Instances of the managers */
 	UPROPERTY()
@@ -49,4 +54,6 @@ protected:
     UPauseManager* PauseManagerInstance;
 	UPROPERTY()
     UEventManager* EventManagerInstance;
+	UPROPERTY()
+    USpawnDirector* SpawnDirectorInstance;
 };

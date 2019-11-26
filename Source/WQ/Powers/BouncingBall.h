@@ -6,7 +6,7 @@ class USceneComponent;
 class UPrimitiveComponent;
 class UStaticMeshComponent;
 class USphereComponent;
-class UNiagaraComponent;
+class UParticleSystemComponent;
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "Managers/EventManager.h"
@@ -33,8 +33,14 @@ public:
 	/** Called every frame */
 	virtual void Tick(float DeltaTime) override;
 
-	/** Changes the scale of the ball elements in a given time */
-	void ChangeScale(FSimpleCallback Callback);
+	/** Launches the charge of the ball */
+	void Charge(FSimpleCallback Callback);
+
+	/** Stops the charge */
+	void StopCharge();
+
+	/** Reset the ball */
+	void ResetBall();
 
 	/** Activate/deactivate the ball */
 	void SetBallActive(bool bState);
@@ -45,9 +51,6 @@ public:
 	/** Get the ball back with telekinesis */
 	void GetBallBack(USceneComponent* TargetComponent, float Strength, FSimpleCallback Callback);
 
-	/** Reset the ball position and scale */
-	void ResetBall();
-
 	/** Setter for the damage value */
 	inline void SetDamage(const float Value) { Damage = Value; }
     
@@ -57,6 +60,7 @@ public:
     inline void SetSlowmoLeverage( const float reductionFactor ) { SlowmoLeverage = reductionFactor; }
 
 protected:
+
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
 
@@ -71,20 +75,28 @@ protected:
 
 	/** Allows us to call the callback when the Niagara animation is finished playing */
 	UFUNCTION()
-	void OnBallComplete(UNiagaraComponent* NiagaraComponent);
+	void OnChargeComplete(UParticleSystemComponent* ParticleSystem);
 
 	/** Allows us to damage enemies when hit while the ball is thrown */
 	UFUNCTION()
 	void OnBallHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
+private:
+	UFUNCTION()
+	void TriggerSlowdown(AWQAIEnemy* touchedActor);
 
 protected:
 	/** Collider used for the ball */
 	UPROPERTY()
 	USphereComponent* BallCollider;
 
-	/** Collider used for the ball */
-	UPROPERTY()
-	UNiagaraComponent* BallNiagara;
+	/** Charging particle system used for the ball, assigned in the blueprint */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UParticleSystemComponent* ChargeParticleSystem;
+
+	/** Charging particle system used for the ball, assigned in the blueprint */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UStaticMeshComponent* FinishedBallMesh;
 
 	/** State of the ball */
 	EBoucingBallEnum State;
@@ -122,8 +134,4 @@ protected:
     FTimerHandle SlowDownTriggerTimerHandle;
 
     FVector velocityBackup;
-
-private:
-    UFUNCTION()
-    void TriggerSlowdown( AWQAIEnemy* touchedActor );
 };
