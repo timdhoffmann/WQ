@@ -191,7 +191,7 @@ void UMagnetPower::SummonReleased()
 			{
 				for (int i = 0; i < MagnetizedProps.Num(); ++i)
 				{
-					MagnetizedProps[i]->AssembleGolem(Golem->GetMesh(), FName(*FString::FromInt(i + 1)), SummonAssemblySpeed);
+					MagnetizedProps[i]->AssembleGolem(Golem->GetMesh(), FName(*FString::FromInt(i)), SummonAssemblySpeed);
 				}
 				MagnetizedProps.Empty();
 			}

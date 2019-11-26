@@ -7,7 +7,7 @@
 #include "PauseManager.h"
 #include "SpawnDirector.h"
 #include "WQCharacter.h"
-
+#include "ShakeManager.h"
 #include "Kismet/GameplayStatics.h"
 
 /** Accessor for C++ & BP */
@@ -35,7 +35,7 @@ UEventManager* UWQGameInstance::EventManager()
 UPauseManager* UWQGameInstance::PauseManager()
 {
     if ( !IsValid( PauseManagerInstance ) ) {
-        PauseManagerInstance = NewObject<UPauseManager>( this, FName( "PauseManager" ) );
+        PauseManagerInstance = NewObject<UPauseManager>( this, PauseManagerBP, FName( "PauseManager" ) );
     }
 
     return PauseManagerInstance;
@@ -45,10 +45,20 @@ UPauseManager* UWQGameInstance::PauseManager()
 USpawnDirector* UWQGameInstance::SpawnDirector()
 {
     if ( !IsValid( SpawnDirectorInstance ) ) {
-        SpawnDirectorInstance = NewObject<USpawnDirector>( this, FName( "SpawnDirector" ) );
+        SpawnDirectorInstance = NewObject<USpawnDirector>( this, SpawnDirectorBP, FName( "SpawnDirector" ) );
     }
 
     return SpawnDirectorInstance;
+}
+
+/** Accessor for C++ & BP */
+UShakeManager* UWQGameInstance::ShakeManager()
+{
+	if (!IsValid(ShakeManagerInstance)) {
+		ShakeManagerInstance = NewObject<UShakeManager>(this, ShakeManagerBP, FName("ShakeManager"));
+	}
+
+	return ShakeManagerInstance;
 }
 
 /** This is where we will clean up, as the game is shut down */

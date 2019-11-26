@@ -151,13 +151,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
-	/** HeadBob shake blueprints */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
+	/** Shake blueprints */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shake)
 	TSubclassOf<UCameraShake> WalkingHeadbobShake;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shake)
 	TSubclassOf<UCameraShake> RunningHeadbobShake;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shake)
+	TSubclassOf<UCameraShake> BoucingBallShake;
 
-	/** Current headbob shake pointer */
+	/** Current shake pointers */
 	TSubclassOf<UCameraShake> HeadbobShake;
 
 	/** Normal footsteps interval in distance (cm) */

@@ -17,7 +17,7 @@
 #include "Math/UnrealMathUtility.h"
 #include "Powers/Power.h"
 #include "GameFramework/CharacterMovementComponent.h"
-
+#include "Managers/ShakeManager.h"
 #include "Runtime/AIModule/Classes/Perception/AIPerceptionComponent.h"
 #include "Runtime/AIModule/Classes/Perception/AISense_Sight.h"
 #include "Runtime/AIModule/Classes/Perception/AISense_Hearing.h"
@@ -295,9 +295,9 @@ void AWQCharacter::MoveForward(float Value)
 		AddMovementInput(GetActorForwardVector(), Value);
 
 		// Try and play the headbob if not jumping specified
-		if (!GetCharacterMovement()->IsFalling() && HeadbobShake != nullptr)
+		if (!GetCharacterMovement()->IsFalling())
 		{
-			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
+			GameInstance->ShakeManager()->PlayHeadbob(bIsRunning, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
 	}
 }
@@ -310,9 +310,9 @@ void AWQCharacter::MoveRight(float Value)
 		AddMovementInput(GetActorRightVector(), Value);
 
 		// Try and play the headbob if not jumping specified
-		if (!GetCharacterMovement()->IsFalling() && HeadbobShake != nullptr)
+		if (!GetCharacterMovement()->IsFalling())
 		{
-			GetWorld()->GetFirstPlayerController()->PlayerCameraManager->PlayCameraShake(HeadbobShake, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
+			GameInstance->ShakeManager()->PlayHeadbob(bIsRunning, GetVelocity().Size() / GetCharacterMovement()->GetMaxSpeed());
 		}
 	}
 }
