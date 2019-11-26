@@ -44,6 +44,9 @@ public:
 	/** Set the material glowing, Duration of 0.0f means infinite */
 	void SetGlow(float Multiplier, float Duration = 0.0f, FLinearColor Color = FLinearColor::Black, bool bShouldRandPropulse = false);
 
+	/** Make the prop go towards its golem destination */
+	void AssembleGolem(USceneComponent* Target, FName SocketName, float Speed);
+
 protected:
 	/** Called when the game starts or when spawned */
 	virtual void BeginPlay() override;
@@ -63,6 +66,14 @@ protected:
 
 	/** Tracks the glowing status */
 	bool bIsGlowing;
+	/** Tracks the golem assembling status */
+	bool bIsAssemblingGolem;
+	/** Golem target scene component */
+	USceneComponent* GolemAssemblyTarget;
+	/** Golem socket name */
+	FName GolemAssemblySocket;
+	/** TGolem assembly speed */
+	float GolemAssemblySpeed;
 	/** Tracks the glowing elapsed time */
 	float GlowElapsed;
 	/** Tracks the glowing current duration */

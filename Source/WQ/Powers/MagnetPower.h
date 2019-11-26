@@ -2,6 +2,8 @@
 
 #pragma once
 
+class AWQAIGolem;
+class AMagnetIndicator;
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "Power.h"
@@ -59,6 +61,9 @@ protected:
 	/** Update the summon targetting, and returns whether or not the summon can take place in the area */
 	bool UpdateSummonTargetting();
 
+	/** Removes all magnetized props */
+	void StopMagnet();
+
 protected:
 	/** Range of the power */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
@@ -86,7 +91,7 @@ protected:
 
 	/** Blueprint class of the indicator */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
-	TSubclassOf<class AMagnetIndicator> MagnetIndicatorBP;
+	TSubclassOf<AMagnetIndicator> MagnetIndicatorBP;
 
 	/** Min speed for the RTPC ambiance values (speed value at which the RTPC is set to 0) */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Magnet")
@@ -120,6 +125,14 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Summon")
 	FVector SummonCheckboxExtent;
 
+	/** Speed at which the props will assemble together to form the golem */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Summon")
+	float SummonAssemblySpeed;
+
+	/** Blueprint class of the golem */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Summon")
+	TSubclassOf<AWQAIGolem> GolemBP;
+
 	/** State of the magnet power */
 	EMagnetEnum MagnetState;
 
@@ -140,4 +153,7 @@ protected:
 	/** Props list */
 	UPROPERTY()
 	TArray<class AProps*> MagnetizedProps;
+
+	/** Summoning location */
+	FVector SummoningLocation;
 };

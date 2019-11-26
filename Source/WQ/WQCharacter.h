@@ -37,8 +37,11 @@ public:
 	/** Returns the Power Location scene component **/
 	class USceneComponent* GetFireSceneComponent() const { return FP_FireSceneComponent; }
 	
-	/** Returns the Physic Handles */
-	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+	///** Returns the Physic Handles */
+	//TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+
+	/** Set Physic Handles Location */
+	void SetPhysicHandlesLocation(const FVector Target);
 
 	/** Returns the Physic Handles */
 	void GetPhysicHandlesLocationRotation(FVector& Location, FRotator& Rotation) const { return PhysicHandles[0]->GetTargetLocationAndRotation(Location, Rotation); }

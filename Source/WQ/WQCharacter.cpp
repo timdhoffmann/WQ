@@ -39,11 +39,6 @@ AWQCharacter::AWQCharacter()
 	// Default offset from the character location for projectiles to spawn
 	GunOffset = FVector(100.0f, 0.0f, 10.0f);
 
-	// Create the needed handles
-	for (int i = 0; i < 10; i++)
-	{
-		AddPhysicHandle(i);
-	}
 	HandlesUsed = 0;
 	NormalFootstepsInterval = 350.0f;
 	RunningFootstepsInterval = 350.0f;
@@ -63,6 +58,14 @@ void AWQCharacter::BeginPlay()
 	// Call the base class  
 	Super::BeginPlay();
 
+	// Create some initial physic handles
+	PhysicHandles.Empty();
+	for (int i = 0; i < 2; i++)
+	{
+		AddPhysicHandle(i, true);
+	}
+
+	// Setup the perception
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Sight::StaticClass(), this );
     UAIPerceptionSystem::RegisterPerceptionStimuliSource( this, UAISense_Hearing::StaticClass(), this );
 
@@ -391,7 +394,7 @@ void AWQCharacter::AddPhysicHandle(int Index, bool bIsRuntime)
 	else
 	{
 		PhysicHandle = NewObject<UPhysicsHandleComponent>(this, FName(TEXT("RuntimePhysicHandle"), Index));
-		if (PhysicHandle)
+		if (IsValid(PhysicHandle))
 		{
 			this->AddInstanceComponent(PhysicHandle);
 			PhysicHandle->OnComponentCreated();
@@ -399,14 +402,23 @@ void AWQCharacter::AddPhysicHandle(int Index, bool bIsRuntime)
 		}
 	}
 
-	if (PhysicHandle)
+	if (IsValid(PhysicHandle))
 	{
-		PhysicHandle->SetLinearDamping(0.01f);
-		PhysicHandle->SetLinearStiffness(1000000000.0f);
-		PhysicHandle->SetAngularDamping(0.01f);
-		PhysicHandle->SetAngularStiffness(1000000000.0f);
-		PhysicHandle->SetInterpolationSpeed(1000000000.0f);
+		//PhysicHandle->SetLinearDamping(0.1f);
+		//PhysicHandle->SetLinearStiffness(1000.0f);
+		//PhysicHandle->SetAngularDamping(0.1f);
+		//PhysicHandle->SetAngularStiffness(1000.0f);
+		//PhysicHandle->SetInterpolationSpeed(1000.0f);
 		PhysicHandle->SetActive(false);
 		PhysicHandles.Add(PhysicHandle);
+	}
+}
+
+/** Set Physic Handles Location */
+void AWQCharacter::SetPhysicHandlesLocation(const FVector Target)
+{
+	for (UPhysicsHandleComponent* Handle : PhysicHandles)
+	{
+		Handle->SetTargetLocation(Target);
 	}
 }

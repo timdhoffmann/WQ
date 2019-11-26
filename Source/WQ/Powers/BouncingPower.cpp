@@ -49,7 +49,7 @@ void UBouncingPower::BeginPlay()
 	Super::BeginPlay();
 
 	// Spawn the ball
-	if (BouncingBallBP)
+	if (IsValid(BouncingBallBP))
 	{
 		SpawnBall();
 	}
@@ -67,8 +67,10 @@ void UBouncingPower::BeginPlay()
 	TelekinesisSweepParams = FCollisionQueryParams();
 	SweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
 	TelekinesisSweepParams.AddIgnoredActor(Character); // Ignore the character in the sweep
-	if (BouncingBall)
+	if (IsValid(BouncingBall))
+	{
 		SweepParams.AddIgnoredActor(BouncingBall); // Ignore the ball only for the sphere
+	}
 
     AuraSphere = FCollisionShape::MakeSphere( AuraRadius );
     AuraSweepParams = FCollisionQueryParams();
