@@ -52,6 +52,10 @@ protected:
 	/** Update the ball targetting when the ball is thrown, and returns whether or not the ball is targettable */
 	bool UpdateBallTargetting();
 
+	/** Propulse the ball after the game feel effects are done */
+	UFUNCTION()
+	void PropulseBallAfterEffects();
+
     void UpdateAuraLogic();
 
 	/** Function called on telekinesis finished */
@@ -95,39 +99,50 @@ protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing)
 	int BallDamage;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+	/** Duration in seconds of the slow motion just before propulsing the ball */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = GameFeel)
+	float ProjectionSlowDuration;
+
+	/** Time dilation value (> 0.0f (full stop) and < 1.0f ( normal dilation)) */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = GameFeel)
+	float ProjectionSlowAmount;
+
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Slowmo )
     bool SlowmoEnabled;
 
     /** Time duration during which the ball is bouncing and the player is stun (in secs) */
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Slowmo)
     float SlowmoDelay;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Slowmo)
     float SlowmoDuration;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Slowmo)
     float SlowmoLeverage;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura )
     bool AuraEnabled;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura )
     float AuraRadius;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura )
     float AuraLevitationForce;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura)
     float AuraLevitationTime;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura)
     float AuraLevitationMaxHeight;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura)
     float AuraLevitationMinHeight;
 
-    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Bouncing )
+    UPROPERTY( EditDefaultsOnly, BlueprintReadWrite, Category = Aura)
     float AuraLevitationAmplitude;
+
+	/** Propulsion Direction */
+	FVector PropulsionDirection;
 
 	/** Status of the time limit */
 	float CurrentProjectionTime;

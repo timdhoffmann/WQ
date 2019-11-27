@@ -37,8 +37,11 @@ public:
 	/** Returns the Power Location scene component **/
 	class USceneComponent* GetFireSceneComponent() const { return FP_FireSceneComponent; }
 	
-	/** Returns the Physic Handles */
-	TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+	///** Returns the Physic Handles */
+	//TArray<class UPhysicsHandleComponent*> GetPhysicHandles() const { return PhysicHandles; }
+
+	/** Set Physic Handles Location */
+	void SetPhysicHandlesLocation(const FVector Target);
 
 	/** Returns the Physic Handles */
 	void GetPhysicHandlesLocationRotation(FVector& Location, FRotator& Rotation) const { return PhysicHandles[0]->GetTargetLocationAndRotation(Location, Rotation); }
@@ -148,13 +151,15 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Gameplay)
 	class UAnimMontage* FireAnimation;
 
-	/** HeadBob shake blueprints */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
+	/** Shake blueprints */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shake)
 	TSubclassOf<UCameraShake> WalkingHeadbobShake;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Headbob)
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shake)
 	TSubclassOf<UCameraShake> RunningHeadbobShake;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Shake)
+	TSubclassOf<UCameraShake> BoucingBallShake;
 
-	/** Current headbob shake pointer */
+	/** Current shake pointers */
 	TSubclassOf<UCameraShake> HeadbobShake;
 
 	/** Normal footsteps interval in distance (cm) */

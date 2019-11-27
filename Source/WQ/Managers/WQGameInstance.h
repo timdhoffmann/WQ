@@ -6,7 +6,7 @@ class AAudioManager;
 class UEventManager;
 class UPauseManager;
 class USpawnDirector;
-
+class UShakeManager;
 #include "CoreMinimal.h"
 #include "Engine/GameInstance.h"
 #include "WQGameInstance.generated.h"
@@ -29,6 +29,8 @@ public:
     UPauseManager* PauseManager();
     UFUNCTION( BlueprintPure, Category = Managers)
     USpawnDirector* SpawnDirector();
+	UFUNCTION(BlueprintPure, Category = Managers)
+	UShakeManager* ShakeManager();
 
 protected:
 	/** This is where we will clean up, as the game is shut down */
@@ -42,10 +44,12 @@ protected:
 	//UPROPERTY(Transient, EditAnywhere, BlueprintReadWrite, Category = "Managers")
     UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Managers )
     TSubclassOf<AAudioManager> AudioManagerBP;
-    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Managers" )
-    TSubclassOf<UPauseManager> PauseManagerBP;
-    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = "Managers" )
-    TSubclassOf<USpawnDirector> SpawnDirectorBP;
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Managers )
+	UClass* PauseManagerBP;
+    UPROPERTY( EditAnywhere, BlueprintReadWrite, Category = Managers )
+	UClass* SpawnDirectorBP;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Managers )
+	UClass* ShakeManagerBP;
 
 	/** Instances of the managers */
 	UPROPERTY()
@@ -56,4 +60,6 @@ protected:
     UEventManager* EventManagerInstance;
 	UPROPERTY()
     USpawnDirector* SpawnDirectorInstance;
+	UPROPERTY()
+	UShakeManager* ShakeManagerInstance;
 };

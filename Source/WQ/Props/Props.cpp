@@ -85,6 +85,24 @@ void AProps::Tick(float DeltaTime)
 			bIsGlowing = false;
 		}
 	}
+
+	if (bIsAssemblingGolem)
+	{
+		FVector Direction = GolemAssemblyTarget->GetSocketLocation(GolemAssemblySocket) - GetRootComponent()->GetComponentLocation();
+
+		// Stop if we are near enough the destination
+		if (Direction.SizeSquared() < 10.0f)
+		{
+			// Change needed parameters
+			bIsAssemblingGolem = false;
+			AttachToComponent(GolemAssemblyTarget, FAttachmentTransformRules::KeepWorldTransform, GolemAssemblySocket);
+		}
+		else
+		{
+			// Propulse the meshes towards the target
+			GetRootComponent()->SetWorldLocation(FMath::VInterpTo(GetRootComponent()->GetComponentLocation(), GolemAssemblyTarget->GetSocketLocation(GolemAssemblySocket), DeltaTime, GolemAssemblySpeed));
+		}
+	}
 }
 
 /** Called to bind functionality to input */
@@ -183,5 +201,17 @@ void AProps::SetGlow(float Multiplier, float Duration, FLinearColor Color, bool 
 	{
 		Mesh->AddForce(FVector(FMath::RandRange(0.0f, 40000.0f), FMath::RandRange(0.0f, 40000.0f), FMath::RandRange(0.0f, 40000.0f)), NAME_None, true);
 	}
+}
+
+/** Make the prop go towards its golem destination */
+void AProps::AssembleGolem(USceneComponent* Target, FName SocketName, float Speed)
+{
+	bIsAssemblingGolem = true;
+	SetGlow(0.0f);
+	SetPhysicSimulation(false);
+	Mesh->SetCollisionProfileName(TEXT("IgnoreAll")); // Avoid having the props collectable again by the magnet
+	GolemAssemblyTarget = Target;
+	GolemAssemblySocket = SocketName;
+	GolemAssemblySpeed = Speed;
 }
 
