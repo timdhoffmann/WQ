@@ -42,7 +42,7 @@ void AWQPusherController::BeginPlay()
     Super::BeginPlay();
 
     ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
-    if ( ForgeTarget != nullptr ) {
+    if ( ensureMsgf(ForgeTarget != nullptr, TEXT("[%s] Could not find a forge to attack. Must be named 'Forge' in the World Outliner."), *GetName()) ) {
         BlackboardComponent->SetValueAsObject( TEXT( "ForgeKey" ), ForgeTarget );
     }
  
@@ -52,6 +52,8 @@ void AWQPusherController::BeginPlay()
 void AWQPusherController::Tick( float DeltaTime )
 {
     Super::Tick( DeltaTime );
+
+	if (!ensure(ForgeTarget != nullptr)) return;
 
     FVector NextActorPosition = ForgeTarget->GetActorLocation();
 
