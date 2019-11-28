@@ -1,0 +1,64 @@
+Event	ID	Name			Wwise Object Path	Notes
+	48784928	Play_Footsteps_Sw			\Default Work Unit\Player\Play_Footsteps_Sw	
+	502856543	Play_WQ_Sfx_Fire_Constant_Lp			\Default Work Unit\Sfx\Play_WQ_Sfx_Fire_Constant_Lp	
+	1145981007	Play_Fire_On_Rnd			\Default Work Unit\Sfx\Play_Fire_On_Rnd	
+	1254530983	Stop_WQ_Sfx_Fire_Flaque_Lp			\Default Work Unit\Sfx\Stop_WQ_Sfx_Fire_Flaque_Lp	
+	1599170001	Play_WQ_Amb_Wind_Cold_Lp_Os			\Default Work Unit\Amb\Play_WQ_Amb_Wind_Cold_Lp_Os	
+	1884723299	Play_WQ_Amb_Initialize_Lp			\Default Work Unit\Amb\Play_WQ_Amb_Initialize_Lp	
+	1906696341	Play_WQ_Sfx_Fire_Flaque_Lp			\Default Work Unit\Sfx\Play_WQ_Sfx_Fire_Flaque_Lp	
+	1994703457	Stop_WQ_Sfx_Fire_Constant_Lp			\Default Work Unit\Sfx\Stop_WQ_Sfx_Fire_Constant_Lp	
+	4178238913	Play_Footsteps_Arret_Sw			\Default Work Unit\Player\Play_Footsteps_Arret_Sw	
+
+Switch Group	ID	Name			Wwise Object Path	Notes
+	1012989952	Foosteps			\Default Work Unit\Foosteps	
+
+Switch	ID	Name	Switch Group			Notes
+	2058049674	Wood	Foosteps			
+	4169408098	Asphalt	Foosteps			
+
+State Group	ID	Name			Wwise Object Path	Notes
+	3589756548	Int_Ext			\Default Work Unit\Int_Ext	
+
+State	ID	Name	State Group			Notes
+	0	None	Int_Ext			
+	645492555	Out	Int_Ext			
+	1752637612	In	Int_Ext			
+
+Custom State	ID	Name	State Group	Owner		Notes
+	175391084	In	Int_Ext	\Actor-Mixer Hierarchy\Default Work Unit\Ambiances\WQ_Amb_Wind_Cold_Lp_Os		
+	295868056	In	Int_Ext	\Actor-Mixer Hierarchy\Default Work Unit\Ambiances\WQ_Amb_Drones_01_Lp		
+	333311985	Out	Int_Ext	\Actor-Mixer Hierarchy\Default Work Unit\Ambiances\WQ_Amb_Drones_01_Lp		
+
+Game Parameter	ID	Name			Wwise Object Path	Notes
+	4074396112	VFX_Magnetise_Dist			\Default Work Unit\Gameplay\VFX_Magnetise_Dist	
+
+In Memory Audio	ID	Name	Audio source file		Wwise Object Path	Notes	Data Size
+	41987945	FOOTSTEP_Leather_Wood_Hollow_Walk_RR6_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR6_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR6_mono		63426
+	72028421	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR7_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR7_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR7_mono		51470
+	86890535	WQ_Player_Foley_04_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Player_Foley_04_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Foleys\WQ_Player_Foley_04_Os		261136
+	107881247	FOOTSTEP_Leather_Wood_Hollow_Walk_RR5_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR5_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR5_mono		75008
+	122134693	WQ_Amb_Drones_01_Lp	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Amb_Drones_01_Lp_D79FB2B7.wem		\Actor-Mixer Hierarchy\Default Work Unit\Ambiances\WQ_Amb_Drones_01_Lp		9146192
+	150191838	FOOTSTEP_Leather_Wood_Hollow_Walk_RR7_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR7_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR7_mono		82788
+	174020907	WQ_Sfx_Props_Magnetise_02_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Sfx_Props_Magnetise_02_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Sfx\Sfx_Props_Magnestise_Rnd\WQ_Sfx_Props_Magnetise_02_Os		785424
+	258169906	WQ_Player_Foley_05_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Player_Foley_05_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Foleys\WQ_Player_Foley_05_Os		261136
+	269681896	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR1_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR1_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR1_mono		53480
+	305055190	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR5_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR5_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR5_mono		56878
+	337736733	FOOTSTEP_Leather_Wood_Hollow_Walk_RR1_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR1_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR1_mono		77406
+	352054759	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR2_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR2_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR2_mono		57558
+	417856162	WQ_Player_Foley_02_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Player_Foley_02_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Foleys\WQ_Player_Foley_02_Os		261136
+	459313986	WQ_Sfx_Props_Magnetise_Lp	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Sfx_Props_Magnetise_Lp_DC0A1A7C.wem		\Actor-Mixer Hierarchy\Default Work Unit\Sfx\WQ_Sfx_Props_Magnetise_Lp		2319908
+	545545442	WQ_Sfx_Fire_Constant_Lp	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Sfx_Fire_Constant_Lp_24D4BAE3.wem		\Actor-Mixer Hierarchy\Default Work Unit\Sfx\WQ_Sfx_Fire_Constant_Lp		3004804
+	552247316	WQ_Amb_Wind_Cold_Lp_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Amb_Wind_Cold_Lp_Os_D79FB2B7.wem		\Actor-Mixer Hierarchy\Default Work Unit\Ambiances\WQ_Amb_Wind_Cold_Lp_Os		4689744
+	556139334	FOOTSTEP_Leather_Wood_Hollow_Walk_RR4_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR4_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR4_mono		68730
+	710163011	FOOTSTEP_Leather_Wood_Hollow_Walk_RR8_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR8_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR8_mono		71078
+	715287824	WQ_Player_Foley_03_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Player_Foley_03_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Foleys\WQ_Player_Foley_03_Os		261136
+	741283057	WQ_Player_Foley_06_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Player_Foley_06_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Foleys\WQ_Player_Foley_06_Os		261136
+	845100067	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR4_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR4_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR4_mono		57704
+	884149298	FOOTSTEP_Leather_Wood_Hollow_Walk_RR3_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR3_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR3_mono		76198
+	884349937	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR6_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR6_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR6_mono		56942
+	952556684	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR8_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR8_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR8_mono		56360
+	974334671	FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR3_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR3_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Asphalt\FOOTSTEP_Asphalt_Trainers_Walk_Slow_RR3_mono		52240
+	1034551496	WQ_Sfx_Props_Magnetise_01_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Sfx_Props_Magnetise_01_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Sfx\Sfx_Props_Magnestise_Rnd\WQ_Sfx_Props_Magnetise_01_Os		785424
+	1036359805	WQ_Player_Foley_01_Os	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\WQ_Player_Foley_01_Os_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Foleys\WQ_Player_Foley_01_Os		261136
+	1046560244	FOOTSTEP_Leather_Wood_Hollow_Walk_RR2_mono	C:\Users\ELE59cf469c9ad5e\Desktop\wq_wwise\Wq_Wwise\.cache\Windows\SFX\FOOTSTEP_Leather_Wood_Hollow_Walk_RR2_mono_10C4C929.wem		\Actor-Mixer Hierarchy\Default Work Unit\Player\Footsteps_Sw\Wood\FOOTSTEP_Leather_Wood_Hollow_Walk_RR2_mono		71618
+
