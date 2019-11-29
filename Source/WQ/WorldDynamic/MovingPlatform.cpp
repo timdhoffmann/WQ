@@ -20,7 +20,7 @@ void AMovingPlatform::BeginPlay()
 		SetReplicateMovement(true);
 	}
 
-	StartPosition = GetTransform().GetLocation();
+	StartLocation = GetTransform().GetLocation();
 }
 
 void AMovingPlatform::Tick(float DeltaSeconds)
@@ -30,6 +30,11 @@ void AMovingPlatform::Tick(float DeltaSeconds)
 	// Runs only on the server.
 	if (HasAuthority())
 	{
-		SetActorLocation(GetActorLocation() + FVector::ForwardVector * MoveSpeed /* * FMath::Sin(FVector::Distance(GetTransform().GetLocation(), StartPosition))*/);
+		FVector ActorLocation = GetActorLocation();
+		const FVector TargetWorldLocation = GetTransform().TransformPosition(TargetLocation);
+		const FVector TargetDirectionNormal = (TargetWorldLocation - ActorLocation).GetSafeNormal(0.01f);
+		//UE_LOG(LogTemp, Warning, TEXT("%s"), TargetDirectionNormal.IsNormalized() ? TEXT("True") : TEXT("False"));
+		ActorLocation += TargetDirectionNormal * MoveSpeed * DeltaSeconds;
+		SetActorLocation(ActorLocation /* * FMath::Sin(FVector::Distance(GetTransform().GetLocation(), StartLocation))*/);
 	}
 }

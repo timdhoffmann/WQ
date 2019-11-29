@@ -26,7 +26,10 @@ protected:
 
 private:
 
-	FVector StartPosition = FVector::ZeroVector;
+	FVector StartLocation = FVector::ZeroVector;
+
+	UPROPERTY(EditAnywhere, Category = "Setup", Meta = (MakeEditWidget = true))
+		FVector TargetLocation = FVector::ZeroVector;
 
 	UPROPERTY(EditAnywhere, Category = "Setup")
 		float MoveSpeed = 10.f;
