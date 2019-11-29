@@ -14,6 +14,12 @@ void AMovingPlatform::BeginPlay()
 {
 	Super::BeginPlay();
 
+	if (HasAuthority())
+	{
+		SetReplicates(true);
+		SetReplicateMovement(true);
+	}
+
 	StartPosition = GetTransform().GetLocation();
 }
 
