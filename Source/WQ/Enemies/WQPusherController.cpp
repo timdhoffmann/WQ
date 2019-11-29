@@ -42,7 +42,13 @@ void AWQPusherController::BeginPlay()
     Super::BeginPlay();
 
     ForgeTarget = FindObject<AWQAICharacter>( GetLevel(), TEXT( "Forge" ) );
-    if ( ensureMsgf(ForgeTarget != nullptr, TEXT("[%s] Could not find a forge to attack. Must be named 'Forge' in the World Outliner."), *GetName()) ) {
+    if ( ensureMsgf(ForgeTarget != nullptr, 
+			TEXT("[%s] Could not find a forge to attack in %s. Must belong to the same StreamingLevel and be named 'Forge' in the World Outliner."), 
+			*GetName(), 
+			*GetLevel()->GetName()
+			) 
+		) 
+	{
         BlackboardComponent->SetValueAsObject( TEXT( "ForgeKey" ), ForgeTarget );
     }
  
