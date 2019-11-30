@@ -14,27 +14,36 @@ void AMovingPlatform::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (HasAuthority())
-	{
-		SetReplicates(true);
-		SetReplicateMovement(true);
-	}
+	StartLocation = GetActorLocation();
+	// Gets the target's world location since the target location is local to the actor's transform.
+	TargetLocation = GetTransform().TransformPosition(LocalTargetLocation);
 
-	StartLocation = GetTransform().GetLocation();
+	/// Server-only code.
+
+	if (!HasAuthority()) return;
+
+	SetReplicates(true);
+	SetReplicateMovement(true);
 }
 
 void AMovingPlatform::Tick(float DeltaSeconds)
 {
 	Super::Tick(DeltaSeconds);
 
-	// Runs only on the server.
-	if (HasAuthority())
+	/// Server-only code.
+
+	if (!HasAuthority()) return;
+
+	const FVector Location = GetActorLocation();
+	const float DistanceTraveled = (Location - StartLocation).Size();
+	const float MaxDistance = (TargetLocation - StartLocation).Size();
+	if (DistanceTraveled >= MaxDistance)
 	{
-		FVector ActorLocation = GetActorLocation();
-		const FVector TargetWorldLocation = GetTransform().TransformPosition(TargetLocation);
-		const FVector TargetDirectionNormal = (TargetWorldLocation - ActorLocation).GetSafeNormal(0.01f);
-		//UE_LOG(LogTemp, Warning, TEXT("%s"), TargetDirectionNormal.IsNormalized() ? TEXT("True") : TEXT("False"));
-		ActorLocation += TargetDirectionNormal * MoveSpeed * DeltaSeconds;
-		SetActorLocation(ActorLocation /* * FMath::Sin(FVector::Distance(GetTransform().GetLocation(), StartLocation))*/);
+		const FVector Swap = StartLocation;
+		StartLocation = TargetLocation;
+		TargetLocation = Swap;
 	}
+
+	const FVector Direction = (TargetLocation - StartLocation).GetSafeNormal();
+	SetActorLocation(Location + Direction * MoveSpeed * DeltaSeconds);
 }
