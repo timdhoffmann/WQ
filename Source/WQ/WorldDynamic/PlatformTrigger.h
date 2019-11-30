@@ -7,6 +7,7 @@
 #include "PlatformTrigger.generated.h"
 
 #pragma region Forward Declarations
+class AMovingPlatform;
 class UBoxComponent;
 #pragma endregion
 
@@ -15,6 +16,14 @@ class WQ_API APlatformTrigger : public AActor
 {
 	GENERATED_BODY()
 
+#pragma region Variables
+private:
+	UPROPERTY(VisibleAnywhere)
+		UBoxComponent* TriggerBoxComponent = nullptr;
+
+#pragma endregion
+
+#pragma region Functions
 public:
 	// Sets default values for this actor's properties
 	APlatformTrigger();
@@ -28,8 +37,10 @@ protected:
 	virtual void BeginPlay() override;
 
 private:
-	UPROPERTY(VisibleAnywhere)
-		UBoxComponent* TriggerBoxComponent = nullptr;
+
+	/* The platforms to trigger. */
+	UPROPERTY(EditAnywhere, Category = "Setup")
+		TArray<AMovingPlatform*> Platforms;
 
 #pragma region Delegates
 	/// Must be UFUNCTIONs!
@@ -39,5 +50,6 @@ private:
 
 	UFUNCTION()
 		void OnComponentHasEndedOverlap(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+#pragma endregion
 #pragma endregion
 };
