@@ -91,6 +91,11 @@ void UWQGameInstance::Join(FString& IPAddress) const
 {
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
+
+	APlayerController* PlayerController = GetFirstLocalPlayerController();
+	if (!ensure(PlayerController != nullptr)) return;
+	PlayerController->ClientTravel(IPAddress, ETravelType::TRAVEL_Absolute);
+
 	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, FString::Printf(TEXT("Joining %s"), *IPAddress));
 }
 
