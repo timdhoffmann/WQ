@@ -2,13 +2,25 @@
 
 #include "WQGameInstance.h"
 
+#include "Engine/Engine.h"
+#include "Kismet/GameplayStatics.h"
+
 #include "AudioManager.h"
 #include "EventManager.h"
 #include "PauseManager.h"
 #include "SpawnDirector.h"
-#include "WQCharacter.h"
 #include "ShakeManager.h"
-#include "Kismet/GameplayStatics.h"
+#include "WQCharacter.h"
+
+UWQGameInstance::UWQGameInstance(const FObjectInitializer& ObjectInitializer)
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s Constructor."), *GetFullName());
+}
+
+void UWQGameInstance::Init()
+{
+	UE_LOG(LogTemp, Warning, TEXT("%s Init."), *GetFullName());
+}
 
 /** Accessor for C++ & BP */
  // Singleton-like accessor. I only use this as a workaround for PIE
@@ -34,21 +46,21 @@ UEventManager* UWQGameInstance::EventManager()
 /** Accessor for C++ & BP */
 UPauseManager* UWQGameInstance::PauseManager()
 {
-    if ( !IsValid( PauseManagerInstance ) ) {
-        PauseManagerInstance = NewObject<UPauseManager>( this, PauseManagerBP, FName( "PauseManager" ) );
-    }
+	if (!IsValid(PauseManagerInstance)) {
+		PauseManagerInstance = NewObject<UPauseManager>(this, PauseManagerBP, FName("PauseManager"));
+	}
 
-    return PauseManagerInstance;
+	return PauseManagerInstance;
 }
 
 /** Accessor for C++ & BP */
 USpawnDirector* UWQGameInstance::SpawnDirector()
 {
-    if ( !IsValid( SpawnDirectorInstance ) ) {
-        SpawnDirectorInstance = NewObject<USpawnDirector>( this, SpawnDirectorBP, FName( "SpawnDirector" ) );
-    }
+	if (!IsValid(SpawnDirectorInstance)) {
+		SpawnDirectorInstance = NewObject<USpawnDirector>(this, SpawnDirectorBP, FName("SpawnDirector"));
+	}
 
-    return SpawnDirectorInstance;
+	return SpawnDirectorInstance;
 }
 
 /** Accessor for C++ & BP */
@@ -59,6 +71,21 @@ UShakeManager* UWQGameInstance::ShakeManager()
 	}
 
 	return ShakeManagerInstance;
+}
+
+void UWQGameInstance::Host() const
+{
+	UEngine* Engine = GetEngine();
+	if (!ensure(Engine != nullptr)) return;
+
+	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, TEXT("Hosting..."));
+}
+
+void UWQGameInstance::Join(FString& IPAddress) const
+{
+	UEngine* Engine = GetEngine();
+	if (!ensure(Engine != nullptr)) return;
+	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, FString::Printf(TEXT("Joining %s"), *IPAddress));
 }
 
 /** This is where we will clean up, as the game is shut down */
@@ -74,4 +101,3 @@ void UWQGameInstance::Shutdown()
 	//	// If some behaviour is needed, input it here
 	//}
 }
-
