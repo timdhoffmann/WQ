@@ -56,7 +56,7 @@ public:
 	 * ...and work within the respective scope.
 	 */
 #pragma region Console Commands
-	/** Console command to host a server. */
+	/** Console command to host a listen server. */
 	UFUNCTION(Exec)
 		void Host() const;
 	

@@ -79,6 +79,12 @@ void UWQGameInstance::Host() const
 	if (!ensure(Engine != nullptr)) return;
 
 	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, TEXT("Hosting..."));
+
+	UWorld* World = GetWorld();
+	if (!ensure(World != nullptr)) return;
+	/// Travels to new map as a server.
+	/// Arguments can be given as part of the Url (listen is required for letting others join).
+	World->ServerTravel("/Game/Developers/Tim/Testing_Tim?listen");
 }
 
 void UWQGameInstance::Join(FString& IPAddress) const
