@@ -77,8 +77,7 @@ void UWQGameInstance::Host() const
 {
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
-
-	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, TEXT("Hosting..."));
+	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, TEXT("Starting host as a listen server..."));
 
 	UWorld* World = GetWorld();
 	if (!ensure(World != nullptr)) return;
@@ -91,12 +90,11 @@ void UWQGameInstance::Join(FString& IPAddress) const
 {
 	UEngine* Engine = GetEngine();
 	if (!ensure(Engine != nullptr)) return;
+	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, FString::Printf(TEXT("Joining %s..."), *IPAddress));
 
 	APlayerController* PlayerController = GetFirstLocalPlayerController();
 	if (!ensure(PlayerController != nullptr)) return;
 	PlayerController->ClientTravel(IPAddress, ETravelType::TRAVEL_Absolute);
-
-	Engine->AddOnScreenDebugMessage(0, DefaultMessageDisplaySeconds, FColor::Green, FString::Printf(TEXT("Joining %s"), *IPAddress));
 }
 
 /** This is where we will clean up, as the game is shut down */
